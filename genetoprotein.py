@@ -25,15 +25,18 @@ def get_mapping():
                         # print(gene)
     return mapping
 
-mapping = get_mapping()
-ls = set(mapping.values())
-# to_file(mapping, 'output.csv')
-
 
 dfs = pd.read_excel("Cheng_Collaboration_data.xlsx", sheet_name="Protein from luminal fluid")
 joy_proteins = set(dfs['Accession'].tolist())
 
-print(len(joy_proteins), len(ls), len(joy_proteins.intersection(ls)))
+
+
+mapping = get_mapping()
+
+mapping = {i: j for i, j in mapping.items() if j in joy_proteins}
+
+to_file(mapping, 'output.csv')
+print("Found {} proteins".format(len(mapping)))
 
 
 
