@@ -27,16 +27,39 @@ def get_mapping():
 
 
 dfs = pd.read_excel("Cheng_Collaboration_data.xlsx", sheet_name="Protein from luminal fluid")
-joy_proteins = set(dfs['Accession'].tolist())
 
+# Retain only rows with at least one value
+selected_rows = dfs[(~dfs['luminal protein estrus'].isnull()) & (~dfs['luminal protein 0.5'].isnull()) \
+    & (~dfs['luminal protein 1.5'].isnull()) &  (~dfs['luminal protein 2.5'].isnull()) \
+    & (~dfs['luminal protein so estrus'].isnull()) &  (~dfs['luminal protein so 0.5'].isnull()) \
+    & (~dfs['luminal protein so 1.5'].isnull()) &  (~dfs['luminal protein so 2.5'].isnull())]
 
+joy_proteins = set(selected_rows['Accession'].tolist())
+
+print(joy_proteins)
 
 mapping = get_mapping()
 
 mapping = {i: j for i, j in mapping.items() if j in joy_proteins}
 
+
+rem = set([i for i in joy_proteins if not i in set(mapping.values())])
+
+print(rem)
+print(len(rem))
+
+exit()
+
 to_file(mapping, 'output.csv')
-print("Found {} proteins".format(len(mapping)))
+print("Found {} proteins, remaining {}".format(len(mapping), len(joy_proteins) - len(mapping)))
+
+exit()
+dfs = pd.read_excel("Cheng_Collaboration_data.xlsx", sheet_name="bulkRNA-seq literature")
+joy_genes = set(dfs['Accession'].tolist())
+
+yo = set(mapping.keys())
+
+print(len(joy_genes.intersection(yo)))
 
 
 
