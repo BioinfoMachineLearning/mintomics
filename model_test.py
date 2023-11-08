@@ -13,8 +13,8 @@ def create_mock_data(n=10):
         genes_2_mask = random.choices(list(mapping.keys()), k=k)
         proteins_2_mask = [mapping[i] for i in genes_2_mask]
 
-        genes_2_mask = torch.tensor(genes_2_mask)
-        proteins_2_mask = torch.tensor(proteins_2_mask)
+        genes_2_mask = torch.tensor(genes_2_mask, dtype=torch.int64)
+        proteins_2_mask = torch.tensor(proteins_2_mask, dtype=torch.int64)
 
         feature = torch.randn(50, 7)
         label = torch.zeros(1, 10)
@@ -32,6 +32,6 @@ def create_mock_data(n=10):
 
 
 if __name__ == '__main__':
-    features, labels = create_mock_data(10)
+    features, labels = create_mock_data(100)
 
     print(features, labels)
