@@ -101,7 +101,7 @@ class GenViT(nn.Module):  # The whole framework of GenViT
     def forward(self, series):
         x = self.gen_embedding(series)
         b, n, _ = x.shape   # n = seq_len;
-        x += self.pos_embedding[:, :(n)]
+        # x += self.pos_embedding[:, :(n)] # we don't need postional encoding anymore
         x = self.dropout(x)
         x = self.transformer(x)
         x = self.mlp_head(x)
