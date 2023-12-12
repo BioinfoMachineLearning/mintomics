@@ -56,8 +56,9 @@ cpm_df_1_5preg.to_csv("Dataset/Data_cpm/Data_1_5preg.csv")
 cpm_df_2_5preg.to_csv("Dataset/Data_cpm/Data_2_5preg.csv")
 
 import torch
+import math
 def z_score(exp_mat):
-            exp_mat = exp_mat
+            exp_mat.iloc[:,1] = np.log10(exp_mat.iloc[:,1])
             
             mean_sam = np.mean(exp_mat.iloc[:,1], axis = 0)
             std_sam = np.std(exp_mat.iloc[:,1], axis = 0)
@@ -71,24 +72,31 @@ def min_max_normalize(df1):
     df = df1.iloc[:,1]
     df1.iloc[:,1] = (df - df.min()) / (df.max() - df.min()) 
     return df1         
-
+import matplotlib.pyplot as plt
 df_label_control = pd.read_csv('Dataset/Labels/Labels_control.csv',delimiter='\t')
-df_label_control = df_label_control.fillna(0.0)
-df_label_control = z_score(df_label_control)
+print(len(df_label_control))
+df_label_control = df_label_control.dropna()
+print(len(df_label_control))
 
-df_label_control.to_csv('Dataset/Labels_proc/Labels_control.csv',index=None)
+df_label_control = z_score(df_label_control)
+plt.plot(df_label_control.iloc[:,1])
+
+df_label_control.to_csv('Dataset/Labels_proc_log10/Labels_control.csv',index=None)
 
 df_label_0_5 = pd.read_csv('Dataset/Labels/Labels_0_5preg.csv',delimiter='\t')
-df_label_0_5 = df_label_0_5.fillna(0)
+df_label_0_5 = df_label_0_5.dropna()
 df_label_0_5 = z_score(df_label_0_5)
-df_label_0_5.to_csv('Dataset/Labels_proc/Labels_0_5preg.csv',index=None)
+print(len(df_label_control))
+df_label_0_5.to_csv('Dataset/Labels_proc_log10/Labels_0_5preg.csv',index=None)
 
 df_label_1_5 = pd.read_csv('Dataset/Labels/Labels_1_5preg.csv',delimiter='\t')
-df_label_1_5 = df_label_1_5.fillna(0)
+df_label_1_5 = df_label_1_5.dropna()
 df_label_1_5 = z_score(df_label_1_5)
-df_label_1_5.to_csv('Dataset/Labels_proc/Labels_1_5preg.csv',index=None)
+print(len(df_label_control))
+df_label_1_5.to_csv('Dataset/Labels_proc_log10/Labels_1_5preg.csv',index=None)
 
 df_label_2_5 = pd.read_csv('Dataset/Labels/Labels_2_5preg.csv',delimiter='\t')
-df_label_2_5 = df_label_2_5.fillna(0)
+df_label_2_5 = df_label_2_5.dropna()
 df_label_2_5 = z_score(df_label_2_5)
-df_label_2_5.to_csv('Dataset/Labels_proc/Labels_2_5preg.csv',index=None)
+print(len(df_label_control))
+df_label_2_5.to_csv('Dataset/Labels_proc_log10/Labels_2_5preg.csv',index=None)
