@@ -74,16 +74,24 @@ def min_max_normalize(df1):
     return df1         
 import matplotlib.pyplot as plt
 
+def sigmoid(x):
+    sum1 = max(x)
+    x = x / sum1
+    return 1 / (1 + np.exp(-x))
+
 
 df_label_control = pd.read_csv('Dataset/Labels/Labels_control.csv',delimiter='\t')
 print(len(df_label_control))
 df_label_control = df_label_control.dropna()
 print(len(df_label_control))
 
-df_label_control = min_max_normalize(df_label_control)
+
+#df_label_control = z_score(df_label_control)
+
+df_label_control.iloc[:,1] = sigmoid(df_label_control.iloc[:,1])
 plt.plot(df_label_control.iloc[:,1])
 
-df_label_control.to_csv('Dataset/Labels_proc_log10_minmax/Labels_control.csv',index=None)
+df_label_control.to_csv('Dataset/Labels_sigmoid_max/Labels_control.csv',index=None)
 
 #df_label_0_5 = pd.read_csv('Dataset/Labels/Labels_0_5preg.csv',delimiter='\t')
 #df_label_0_5 = df_label_0_5.dropna()
