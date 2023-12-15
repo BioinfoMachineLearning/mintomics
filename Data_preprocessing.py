@@ -69,9 +69,15 @@ def z_score(exp_mat):
 
 def min_max_normalize(df1):
     """Normalize a dataframe to the range [0,1]."""
-    df = np.log10(df1.iloc[:,1])
-    df1.iloc[:,1] = (df - df.min()) / (df.max() - df.min()) 
-    return df1         
+    df = np.log10(df1.iloc[:,0])
+    df1.iloc[:,0] = (df - df.min()) / (df.max() - df.min()) 
+    return df1      
+
+def min_max_normalize1(df1):
+    """Normalize a dataframe to the range [0,1]."""
+    df = np.log10(df1)
+    df1 = (df - df.min()) / (df.max() - df.min()) 
+    return df1     
 import matplotlib.pyplot as plt
 
 def sigmoid(x):
@@ -79,19 +85,53 @@ def sigmoid(x):
     x = x / sum1
     return 1 / (1 + np.exp(-x))
 
+df_labels = pd.read_csv("Labels_orig.csv")
+df_labels.set_index(df_labels.iloc[:,0], inplace=True)
+df_labels_nat = df_labels.iloc[:,1:5]
+df_labels_nat= df_labels_nat.dropna(how="all")
+df_labels_nat = df_labels_nat.fillna(1)
 
-df_label_control = pd.read_csv('Dataset/Labels/Labels_control.csv',delimiter='\t')
+from mlxtend.preprocessing import minmax_scaling
+df_labels_nat1 = np.log10(df_labels_nat)
+df_labels_nat2 = minmax_scaling(df_labels_nat1, columns=['luminal protein estrus', 'luminal protein 0.5','luminal protein 1.5','luminal protein 2.5'])
+#df_labels_nat = min_max_normalize1(df_labels_nat)
+df_labels_nat2.to_csv("Dataset/Labels_norm_overall.csv")
+
+
+
+#df_label_control = pd.read_csv('Dataset/Labels/Labels_control.csv',delimiter='\t')
+#print(len(df_label_control))
+df_label_control = pd.DataFrame(df_labels_nat['luminal protein estrus'])
+#df_label_control = df_label_control.fillna(1)
+df_label_control = min_max_normalize(df_label_control)
 print(len(df_label_control))
-df_label_control = df_label_control.dropna()
-print(len(df_label_control))
+#df_label_control.iloc[:,1] = sigmoid(df_label_control.iloc[:,1])
+plt.plot(df_label_control.iloc[:,0])
+
+df_label_control.to_csv('Dataset/Labels_proc_log10_minmax/Labels_control.csv')
 
 
-#df_label_control = z_score(df_label_control)
+df_label_0_5 = pd.DataFrame(df_labels_nat['luminal protein 0.5'])
+#df_label_0_5 = df_label_0_5.fillna(1)
+df_label_0_5 = min_max_normalize(df_label_0_5)
+print(len(df_label_0_5))
+plt.plot(df_label_0_5.iloc[:,0])
+df_label_0_5.to_csv('Dataset/Labels_proc_log10_minmax/Labels_0_5preg.csv')
 
-df_label_control.iloc[:,1] = sigmoid(df_label_control.iloc[:,1])
-plt.plot(df_label_control.iloc[:,1])
+df_label_1_5 = pd.DataFrame(df_labels_nat['luminal protein 1.5'])
+#df_label_0_5 = df_label_1_5.fillna(1)
+df_label_0_5 = min_max_normalize(df_label_1_5)
+print(len(df_label_1_5))
+plt.plot(df_label_1_5.iloc[:,0])
+df_label_1_5.to_csv('Dataset/Labels_proc_log10_minmax/Labels_1_5preg.csv')
 
-df_label_control.to_csv('Dataset/Labels_sigmoid_max/Labels_control.csv',index=None)
+df_label_2_5 = pd.DataFrame(df_labels_nat['luminal protein 2.5'])
+#df_label_2_5 = df_label_2_5.fillna(1)
+df_label_2_5 = min_max_normalize(df_label_2_5)
+print(len(df_label_2_5))
+plt.plot(df_label_2_5.iloc[:,0])
+df_label_2_5.to_csv('Dataset/Labels_proc_log10_minmax/Labels_2_5preg.csv')
+
 
 #df_label_0_5 = pd.read_csv('Dataset/Labels/Labels_0_5preg.csv',delimiter='\t')
 #df_label_0_5 = df_label_0_5.dropna()
