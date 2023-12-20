@@ -16,7 +16,7 @@ class TransformerMintomics(nn.Module):
         #self.MLPreg = nn.Sequential(nn.Linear(172*dim_model*2,dim_model*4),nn.ReLU(),nn.BatchNorm1d(dim_model*4),
         #                           nn.Linear(dim_model*4,dim_model),nn.ReLU(),nn.BatchNorm1d(dim_model),nn.Linear(dim_model,1),nn.ReLU())
         self.MLPclass = nn.Sequential(nn.Linear(dim_model,dim_model*2),nn.ReLU(),nn.BatchNorm1d(dim_model*2),
-                                      nn.Linear(dim_model*2, dim_model*8),nn.ReLU(),nn.BatchNorm1d(dim_model*8),nn.Linear(dim_model*8,n_class),nn.functional.sigmoid())
+                                      nn.Linear(dim_model*2, dim_model*8),nn.ReLU(),nn.BatchNorm1d(dim_model*8),nn.Linear(dim_model*8,n_class))
         self.activation_ELU= nn.ReLU()
 
         
@@ -24,18 +24,20 @@ class TransformerMintomics(nn.Module):
     def forward(self,x):
         x = x.cuda()
 
-        x = x.view(x.size(0), x.size(2), x.size(1))
+        #x = x.view(x.size(0), x.size(2), x.size(1))
+        
         x = self.encod(x)
         x = self.layernorm(x)
         x = self.activation_ELU(x)
         x = self.transformer_encoder(x)
         x,_ = torch.max(x, dim=1)
-        x = x.squeeze(0)     
+        
+            
         x = self.activation_ELU(x)
  
  #       x = x.view(x.size(0), x.size(2)*x.size(1))
        
-        classify = self.MLPclass(x)
-
+        classify = nn.functional.sigmoid(self.MLPclass(x))
+        print(classify.shape)
         
         return classify
