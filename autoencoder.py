@@ -1,6 +1,7 @@
 import math
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import torch
 from torch.utils.data import TensorDataset, DataLoader
@@ -8,7 +9,8 @@ from torch_geometric import nn
 import torch.nn
 from torch import nn
 import torch.nn.functional as F
-from sklearn.metrics import auc, average_precision_score
+from scipy.stats.stats import pearsonr
+from sklearn.metrics import average_precision_score, roc_auc_score
 
 
 def read_map(filename, header=False):
@@ -51,15 +53,20 @@ def create_data():
 
     data['tf'] = data.index.map(tf_map)
 
+
+
     aligned_data = data[(~data['Protein'].isnull())]
     aligned_data = aligned_data[['IU_n1', 'IU_n2', 'IU_n3', 'IUA_n1', 'IA_n2', 'IA_n3']].to_numpy()
     aligned_data = torch.from_numpy(aligned_data).to(torch.float)
 
-    tf_data = data[(data['tf'] == True)]
+    '''tf_data = data[(data['tf'] == True)]
     tf_data = tf_data[['IU_n1', 'IU_n2', 'IU_n3', 'IUA_n1', 'IA_n2', 'IA_n3']].to_numpy()
-    tf_data = torch.from_numpy(tf_data).to(torch.float)
+    tf_data = torch.from_numpy(tf_data).to(torch.float)'''
 
-    return aligned_data, tf_data
+    all_genes = data[['IU_n1', 'IU_n2', 'IU_n3', 'IUA_n1', 'IA_n2', 'IA_n3']].to_numpy()
+    all_genes = torch.from_numpy(all_genes).to(torch.float)
+
+    return aligned_data, all_genes
 
 
 class CrossAttention(nn.Module):
@@ -94,7 +101,7 @@ class CrossAttention(nn.Module):
 
         sum_out = values + q
         proj_out = self.final(sum_out)
-        return proj_out
+        return proj_out, attention
 
 
 class ReverseAttention(nn.Module):
@@ -116,10 +123,27 @@ class AE(torch.nn.Module):
         self.decoder = ReverseAttention(**kwargs)
 
     def forward(self, x):
-        encoded = self.encoder(x)
+        encoded, attention = self.encoder(x)
         decoded = self.decoder(encoded)
-        return decoded
+        return decoded, attention
 
+
+def showAttention(input_sentence, output_words, attentions):
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    cax = ax.matshow(attentions.cpu().numpy(), cmap='bone')
+    fig.colorbar(cax)
+
+    # Set up axes
+    # ax.set_xticklabels([''] + input_sentence.split(' ') +
+    #                   ['<EOS>'], rotation=90)
+    # ax.set_yticklabels([''] + output_words)
+
+    # Show label at every tick
+    # ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
+    # ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
+
+    plt.show()
 
 
 def train_model():
@@ -144,12 +168,19 @@ def train_model():
     optimizer = torch.optim.Adam(model.parameters(),
                                  lr=0.001,
                                  weight_decay=1e-8)
+    cos_col = nn.CosineSimilarity(dim=1, eps=1e-6)
+    cos_row = nn.CosineSimilarity(dim=0, eps=1e-6)
 
-    epochs = 50
+    epochs = 10
     losses = []
+    avg_cos_row = []
+    avg_cos_col = []
     for epoch in range(epochs):
+        print(epoch)
         for (feature, _) in my_dataloader:
-            reconstructed = model(feature)
+
+            reconstructed, attention = model(feature)
+
 
             # Calculating the loss function
             loss = loss_function(reconstructed, feature)
@@ -157,16 +188,47 @@ def train_model():
             loss.backward()
             optimizer.step()
 
+
+            # r2 = np.corrcoef(feature.detach().numpy(), feature.detach().numpy())
+            # pc = pearsonr(feature.detach().numpy().tolist(), reconstructed.detach().numpy().tolist())
+
+            cos_sim_row = cos_row(reconstructed, feature).mean()
+            cos_sim_col = cos_col(reconstructed, feature).mean()
+
+            # print(roc_auc_score(feature.detach().numpy(), feature.detach().numpy()))
+
+            #print(average_precision_score(feature.detach().numpy(), feature.detach().numpy()))
+
             # Storing the losses in a list for plotting
             losses.append(loss.detach().numpy())
+            avg_cos_row.append(cos_sim_row.detach().numpy())
+            avg_cos_col.append(cos_sim_col.detach().numpy())
 
-    # Defining the Plot Style
-    # plt.style.use('fivethirtyeight')
-    plt.xlabel('Iterations')
-    plt.ylabel('Loss')
+    fig, ax = plt.subplots(nrows=3, ncols=1, sharex=True)
+    ax[0].plot(losses)
+    ax[0].set_title('Losses')
 
-    plt.plot(losses[-100:])
-    plt.show()
+    ax[1].plot(avg_cos_row)
+    ax[1].set_title('Rowise Cosine Similarity')
+
+    ax[2].plot(avg_cos_col)
+    ax[2].set_title('Columnwise Cosine Similarity')
+
+    fig.suptitle('Results')
+    # plt.show()
+
+    # showAttention(None, None, attention.detach())
+
+    att = (attention > 0.1)# .float()
+
+    print(attention[att].shape)
+
+    print(torch.sum(att, dim=0))
+
+
+
+
+
 
 
 train_model()
