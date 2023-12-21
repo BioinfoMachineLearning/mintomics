@@ -56,6 +56,7 @@ def create_data():
 
 
     aligned_data = data[(~data['Protein'].isnull())]
+    aligned = set(list(aligned_data.index))
     aligned_data = aligned_data[['IU_n1', 'IU_n2', 'IU_n3', 'IUA_n1', 'IA_n2', 'IA_n3']].to_numpy()
     aligned_data = torch.from_numpy(aligned_data).to(torch.float)
 
@@ -63,7 +64,11 @@ def create_data():
     tf_data = tf_data[['IU_n1', 'IU_n2', 'IU_n3', 'IUA_n1', 'IA_n2', 'IA_n3']].to_numpy()
     tf_data = torch.from_numpy(tf_data).to(torch.float)'''
 
-    all_genes = data[['IU_n1', 'IU_n2', 'IU_n3', 'IUA_n1', 'IA_n2', 'IA_n3']].to_numpy()
+
+    all_genes = data[~data.index.isin(aligned)]
+    all_genes = all_genes[['IU_n1', 'IU_n2', 'IU_n3', 'IUA_n1', 'IA_n2', 'IA_n3']]
+
+    all_genes = all_genes.to_numpy()
     all_genes = torch.from_numpy(all_genes).to(torch.float)
 
     return aligned_data, all_genes
@@ -181,13 +186,11 @@ def train_model():
 
             reconstructed, attention = model(feature)
 
-
             # Calculating the loss function
             loss = loss_function(reconstructed, feature)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-
 
             # r2 = np.corrcoef(feature.detach().numpy(), feature.detach().numpy())
             # pc = pearsonr(feature.detach().numpy().tolist(), reconstructed.detach().numpy().tolist())
@@ -215,9 +218,9 @@ def train_model():
     ax[2].set_title('Columnwise Cosine Similarity')
 
     fig.suptitle('Results')
-    # plt.show()
+    plt.show()
 
-    # showAttention(None, None, attention.detach())
+    showAttention(None, None, attention.detach())
 
     att = (attention > 0.1)# .float()
 
