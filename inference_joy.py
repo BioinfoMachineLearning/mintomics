@@ -13,29 +13,33 @@ from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 from GenFormer import GenViT as GT  # model
 from PrepareDataset import Psedu_data, Data2target  # Dataset
+from PrepareDataset import plotTime as pt
 
 device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
 # device = torch.device('cpu')
 
 root = '/bmlfast/joy_RNA/'
 class FitModel:
-    def __init__(self, regression = False, layer = 3, embed_dim = 128, epoach = 2, batch_size = 1, pertage = 0.5, d_percent = 0.5):
+    def __init__(self, regression = False, layer = 1, embed_dim = 128, epoach = 2, batch_size = 1, pertage = 0.5, d_percent = 0.5, timepoint = '25n'):
 
         self.epochs = epoach
         self.layer = layer
         self.device = device
         self.pertage = pertage
-        self.d_percent =d_percent
+        self.d_percent = d_percent
+        self.mod_name = 'Mlp'
+        self.timept = timepoint  # 'cl': control, '05': 0.5, '15': 1.5, '25': 2.5, None: all time points
 
         # buid a directory for saving weights
         dir_name = 'Model_Weights'
         self.out_dir = root+dir_name
-        os.makedirs(self.out_dir, exist_ok=True)  # ma
+        os.makedirs(self.out_dir, exist_ok=True)  # make directory
 
         # load data and get corresponding information
-        valid_data = Data2target(stage='test', size = 1, pertage = d_percent)  #100 samples each dp
+        valid_data = Data2target(stage='test', size = 1, pertage = d_percent, timepoint=timepoint)  #100 samples each dp
         _, self.gen_num, self.in_feature = valid_data.data.shape  # data shape [Nsample, genlength, feature_dim]  maxlize genlengh 16000
         self.regression = regression
+        self.in_feature = self.in_feature-1
 
         # wrap valid dataset by DataLoader
         self.valid_data = DataLoader(valid_data, batch_size=batch_size, shuffle=False)
@@ -48,15 +52,16 @@ class FitModel:
                 num_classes = 3,
                 dim = embed_dim,   # Last dimension of output tensor after linear transformation
                 depth = layer,   # Number of Transformer blocks.
-                heads = 4,      # Number of heads in Multi-head Attention layer
-                mlp_dim = 2048,     # Dimension of the MLP (FeedForward) layer
+                heads = 1,      # Number of heads in Multi-head Attention layer
+                mlp_dim = embed_dim,     # Dimension of the MLP (FeedForward) layer
                 dropout = 0.0,      # Dropout rate.
-                emb_dropout = 0.0       # Embedding dropout rate.
+                emb_dropout = 0.0,       # Embedding dropout rate.
+                model_type='mlp'
             ).to(self.device)
 
     def fit_model(self):
 
-        best_ckpt_file = f'bestg_{self.layer}layers_genfromer_{self.pertage}_p.pytorch'
+        best_ckpt_file = f'bestg_{self.layer}layers_genfromer_{self.pertage}_{self.mod_name}_{self.timept}.pytorch'
         print(best_ckpt_file)
         path = os.path.join(self.out_dir, best_ckpt_file)
         self.model.load_state_dict(torch.load(path))
@@ -71,19 +76,42 @@ class FitModel:
         valid_bar = tqdm(self.valid_data)
         with torch.no_grad():
             i = 0
+            Pred_all = torch.tensor([])
+            Indice_all = torch.tensor([])
             for data, target, inf in valid_bar:
                 i = i + 1
                 batch_size = data.shape[0]
                 data = data.to(self.device)
+                data = data[:, :, 0:6]
                 target = target.to(self.device)
 
                 out = self.model(data)
-                out = out[:, inf[0, 0], :]
-                # target = torch.transpose(target, 1, 2)   # only for mock data, we need transpose it
-                target = target[:, inf[0, 1], :]
-                # print(out.shape)
+                Pred_all = torch.cat((Pred_all, out.cpu()), 0)
+                Indice_all = torch.cat((Indice_all, inf.cpu()), 0)
+
+                # out = out[:, inf[0, 0], :]
+                # target = target[:, inf[0, 1], :]
+                # print(f'------ the output shape: {out.shape} ------\n')
                 # print(data.shape)
                 # print(target.shape)
+
+                out_all = torch.tensor([]).to(self.device)
+                target_all = torch.tensor([]).to(self.device)
+                for i in range(batch_size):
+                    out_n = out[i]
+                    target_n = target[i]
+
+                    indice_g = inf[i, 0]
+                    indice_p = inf[i, 1]
+
+                    out_nn = out_n[indice_g]
+                    target_nn = target_n[indice_p]
+
+                    out_all = torch.cat((out_all, out_nn), 0)
+                    target_all = torch.cat((target_all, target_nn), 0)
+
+                target = target_all
+                out = out_all
                 loss = criterion(target, out)
 
                 valid_result['nsamples'] += batch_size
@@ -95,15 +123,16 @@ class FitModel:
                 valid_result['spr'] += sprm(tt, new)[0]
                 non_num = np.count_nonzero(new)
                 # if non_num != 0:
-                print(f'the {i} data length of output: {new.shape} and the number of zeros: {int(new.shape[0])-int(non_num)} and spearman: {sprm(tt, new)[0]} ---')
-
-
+                print(f'the {i} data length of output: {new.shape} and  loss: {loss.item()} mae: {mae(tt, new)}  r2: {r2_score(tt, new)} and spearman: {sprm(tt, new)[0]} ---')
+            # pt(Pred_all, info=Indice_all.long(), Protein=False)
+            # print(f'the = length of output: {Pred_all.shape} and the indice number: {Indice_all.shape} ---')
             valid_loss = valid_result['loss'] / valid_result['nsamples']
             valid_r2 = valid_result['R2'] / valid_result['nsamples']
             valid_mae = valid_result['mae'] / valid_result['nsamples']
             valid_spr = valid_result['spr'] / valid_result['nsamples']
 
-        metrics_file = f'bestg_{self.layer}layers_genfromer_{self.pertage}_data{self.d_percent}.txt'
+
+        metrics_file = f'bestg_{self.layer}layers_genfromer_{self.pertage}_{self.mod_name}_{self.timept}.txt'
         pth = root + 'Result'
         file_path = os.path.join(pth, metrics_file)
         record_gds = open(file_path, 'w')
@@ -125,5 +154,5 @@ if __name__ == '__main__':
     '''
 
     # Training model
-    train_model = FitModel(regression=True, layer = 6, epoach = 100, pertage = 0.15, d_percent=0.0)
+    train_model = FitModel(regression=True, layer = 1, epoach = 100, pertage = 0.85, d_percent=0.0)
     train_model.fit_model()
