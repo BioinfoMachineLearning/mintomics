@@ -39,7 +39,7 @@ class Attention(nn.Module):  # Multihead attention block in encoder
         ) if project_out else nn.Identity()
 
     def forward(self, x):
-        x = self.norm(x)
+        # x = self.norm(x)  # modify here
         qkv = self.to_qkv(x).chunk(3, dim = -1)
         q, k, v = map(lambda t: rearrange(t, 'b n (h d) -> b h n d', h = self.heads), qkv)
 
@@ -64,19 +64,35 @@ class Transformer(nn.Module):  # The main body, i.e., Encoder
     def forward(self, x):
         for attn, ff in self.layers:
             x = attn(x) + x
-            x = ff(x) + x
+            # x = ff(x) + x  # modify here
         return x
 
 class GenViT(nn.Module):  # The whole framework of GenViT
-    def __init__(self, *, seq_len, in_dim, regression, num_classes, dim, depth, heads, mlp_dim, dim_head = 64, dropout = 0., emb_dropout = 0.):
+    def __init__(self, *, seq_len, in_dim, regression, num_classes, dim, depth, heads, mlp_dim, dim_head = 64, dropout = 0., emb_dropout = 0., model_type = 'mlp'):
         super().__init__()
+        self.mod_type = model_type
 
         #enlarge the embeding dimension so that multihead attention can capture more input information.
-        self.gen_embedding = nn.Sequential(
-            nn.LayerNorm(in_dim),
-            nn.Linear(in_dim, dim),
-            nn.LayerNorm(dim),
-        )
+        if model_type == 'mlp':
+            self.gen_embedding = nn.Sequential(
+                nn.Linear(in_dim, dim),
+                nn.ReLU(),
+                nn.Linear(128, 64),
+                nn.ReLU(),
+                nn.Linear(64, 32),
+                nn.ReLU(),
+                nn.Linear(32, 16),
+                nn.ReLU(),
+                nn.Linear(16, 8),
+                nn.ReLU(),
+                nn.Linear(8, 1)
+            )
+        else:
+            self.gen_embedding = nn.Sequential(
+                nn.LayerNorm(in_dim),
+                nn.Linear(in_dim, dim),
+                nn.LayerNorm(dim)
+            )
         self.pos_embedding = nn.Parameter(torch.randn(1, seq_len, dim))
         self.dropout = nn.Dropout(emb_dropout)
 
@@ -88,8 +104,9 @@ class GenViT(nn.Module):  # The whole framework of GenViT
         if regression:
             self.mlp_head = nn.Sequential(
                 nn.LayerNorm(dim),
-                nn.Linear(dim, 1),
-                nn.ReLU()
+                nn.Linear(dim, int(dim/2)),
+                nn.ReLU(),
+                nn.Linear(int(dim/2), 1)
             )
         else:
             self.mlp_head = nn.Sequential(
@@ -99,12 +116,16 @@ class GenViT(nn.Module):  # The whole framework of GenViT
             )
 
     def forward(self, series):
-        x = self.gen_embedding(series)
-        b, n, _ = x.shape   # n = seq_len;
-        # x += self.pos_embedding[:, :(n)] # we don't need postional encoding anymore
-        x = self.dropout(x)
-        x = self.transformer(x)
-        x = self.mlp_head(x)
+        # print(f'-----{series.shape} -------\n')
+        if self.mod_type == 'mlp':
+            x = self.gen_embedding(series)
+        else:
+            x = self.gen_embedding(series)
+            # b, n, _ = x.shape   # n = seq_len;
+            #  x += self.pos_embedding[:, :(n)] # we don't need postional encoding anymore
+            x = self.dropout(x)
+            x = self.transformer(x)
+            x = self.mlp_head(x)
         return x
 
 if __name__ == '__main__':
