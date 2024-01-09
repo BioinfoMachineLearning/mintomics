@@ -39,8 +39,8 @@ class TransformerMintomics(nn.Module):
  
  #       x = x.view(x.size(0), x.size(2)*x.size(1))
        
-        classify = nn.functional.sigmoid(self.MLPclass(x))
-        #classify = self.MLPclass(x)
+        #classify = nn.functional.sigmoid(self.MLPclass(x))
+        classify = self.MLPclass(x)
         
         
         return classify
