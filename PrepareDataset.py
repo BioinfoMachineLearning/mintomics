@@ -5,7 +5,7 @@ import pandas as pd
 from torch.utils.data import Dataset
 import matplotlib.pyplot as plt
 import os
-
+DATA_DIR = '/home/aghktb/JOYS_Project/mintomics'
 root = '/bmlfast/joy_RNA/Data/'
 dir_in = 'bulkRNA_p_'
 dir_out = 'protein_p_'
@@ -70,7 +70,7 @@ def gene2protein(stage = 'train', size = 10, pertage = 0.5):
     labels = []
 
     # load transcription factors
-    TF = pd.read_csv('./Mouse_TFs1.csv', header=None)  # without header, the column index will be 0
+    TF = pd.read_csv(DATA_DIR+'/Mouse_TFs1', header=None)  # without header, the column index will be 0
     TF = TF[0].tolist()
     TF = [i.upper() for i in TF]
     TF = set(TF)
@@ -78,10 +78,10 @@ def gene2protein(stage = 'train', size = 10, pertage = 0.5):
     # print(data[0].tolist())
 
     # load data
-    Genedir = './Dataset/Data_cpm/'
-    Prodir = './Dataset/Labels_proc/'
-    Gene_file = ['Data_0_5preg.csv', 'Data_1_5preg.csv', 'Data_2_5preg.csv', 'Data_control.csv']
-    Pro_file = ['Labels_0_5preg.csv', 'Labels_1_5preg.csv', 'Labels_2_5preg.csv', 'Labels_control.csv']
+    Genedir = DATA_DIR+'/Dataset/Data_cpm/'
+    Prodir = DATA_DIR+'/Dataset/Labels_proc_log10_minmax/'
+    Gene_file = ['Data_0_5preg.csv', 'Data_1_5preg.csv', 'Data_control.csv']
+    Pro_file = ['Labels_0_5preg.csv', 'Labels_1_5preg.csv', 'Labels_control.csv']
 
 
     # load geneID data, information and add TF feature to the original dataset
@@ -90,7 +90,7 @@ def gene2protein(stage = 'train', size = 10, pertage = 0.5):
     Gene_all = []
 
     for m, n in enumerate(Gene_file):
-        print(n)
+        
         Gene = pd.read_csv(Genedir + n)
         # Gene = Gene.head(16000)
         if m == 0:
@@ -143,9 +143,9 @@ def gene2protein(stage = 'train', size = 10, pertage = 0.5):
         # min = Prot_dat.min()
         # max = Prot_dat.max()
         # Prot_dat = (Prot_dat-min)/(max-min)
-        per_a = np.percentile(Prot_dat, 99.9)
-        Prot_dat = np.clip(Prot_dat, 0.0, per_a)
-        Prot_dat = Prot_dat/per_a
+        #per_a = np.percentile(Prot_dat, 99.9)
+        #Prot_dat = np.clip(Prot_dat, 0.0, per_a)
+        #Prot_dat = Prot_dat/per_a
 
         print(f'find out the min value: {Prot_dat.min()} and max value: {Prot_dat.max()}\n')
         Prot_all.append(Prot_dat)
@@ -153,7 +153,7 @@ def gene2protein(stage = 'train', size = 10, pertage = 0.5):
 
 
     # load the mapping between GeneID and Protein accession, and convert the mapping to index pair
-    mapping = pd.read_csv('output_n.csv', delimiter='\t', header=None)
+    mapping = pd.read_csv(DATA_DIR+'/output_n.csv', delimiter='\t', header=None)
     # print(mapping)
     Gene_map = mapping[mapping.columns[0]].tolist()
     Gene_map = [i.upper() for i in Gene_map]
@@ -166,15 +166,18 @@ def gene2protein(stage = 'train', size = 10, pertage = 0.5):
 
     Prot_2_num = {}
     for m, n in enumerate(Prot_ID):
+        
         if n in Prot_map:
             Prot_2_num[n] = m
-    map_2_num = {Gene_2_num[i]:Prot_2_num[j] for i, j in zip(Gene_map, Prot_map) if i in Gene_2_num.keys()}
+            
+    map_2_num = {Gene_2_num[i]:Prot_2_num[j] for i, j in zip(Gene_map, Prot_map) if (i in Gene_2_num.keys() and j in Prot_2_num.keys())}
     print(f'the num of map: {len(Prot_map)} ---the num of geneID in mapping: {len(Gene_2_num)} and the num of map pairs: {len(map_2_num)}')
 
 
     # mask the Gene data to get more samples, and find out the corresponding
     data = []
     target = []
+    target_classify = []
     info = []
     n = size   # how many samples for each data point
 
@@ -182,8 +185,10 @@ def gene2protein(stage = 'train', size = 10, pertage = 0.5):
         Gene_dat = dat  # gene data
         tar = torch.tensor(tar, dtype=torch.float32)  # protein data
 
-        P_lar = tar[tar > 0.05]
+        P_lar = tar[tar > 0.7]
+        tar_clss = torch.as_tensor([1 if x>0.7 else 0 for x in tar])
         print(f'------- The number of original proterin: {tar.shape} and high expressed protein: {P_lar.shape} --------\n')
+        print(tar_clss.shape)
         # print(tar)
         if pertage == 0.0:
             gene_mask = list(map_2_num.keys())
@@ -195,6 +200,7 @@ def gene2protein(stage = 'train', size = 10, pertage = 0.5):
 
             data.append(Gene_dat)
             target.append(tar)
+            target_classify.append(tar_clss)
             info.append(genes_2_proten)
 
 
@@ -210,6 +216,7 @@ def gene2protein(stage = 'train', size = 10, pertage = 0.5):
 
                 data.append(Gene_dat)
                 target.append(tar)
+                target_classify.append(tar_clss)
                 info.append(genes_2_proten)
 
         else:
@@ -226,6 +233,7 @@ def gene2protein(stage = 'train', size = 10, pertage = 0.5):
                 info.append(genes_2_proten)
                 data.append(Gene_dat)
                 target.append(tar)
+                target_classify.append(tar_clss)
                 '''
                 # find out the gene indeces in the mapping pool
                 gene_ind = [i for i in gene_mask if i in map_2_num.keys]
@@ -236,9 +244,10 @@ def gene2protein(stage = 'train', size = 10, pertage = 0.5):
 
     data = torch.stack(data, 0)
     target = torch.stack(target, 0)
+    target_classify = torch.stack(target_classify,0)
     # plotTime(target)
     info = torch.stack(info, 0)
-    print(f'the total number of samples we have: {data.shape} and protein shape: {target.shape} ----')
+    print(f'the total number of samples we have: {data.shape} and protein shape: {target.shape} ,{target_classify.shape} ----')
     print(info.shape)
 
     '''
@@ -255,7 +264,7 @@ def gene2protein(stage = 'train', size = 10, pertage = 0.5):
     np.save(root+name_index, index)
     '''
 
-    return data, target, info
+    return data, target, info, target_classify
 
 class Data2target(Dataset):
     def __init__(self, stage = 'train', size = 10, pertage = 0.5):
@@ -265,19 +274,21 @@ class Data2target(Dataset):
             self.data = np.load(root+dir_in + stage +'_'+ str(pertage)+'_'+str(size)+'.npy')
             self.target = np.load(root+dir_out + stage +'_'+ str(pertage)+'_'+str(size)+'.npy')
             self.info = np.load(root+dir_index + stage +'_'+ str(pertage)+'_'+str(size)+'.npy')
+            self.target_classify = np.load(root+dir_out + stage +'_'+ str(pertage)+'_'+str(size)+'.npy')
 
             self.data = torch.from_numpy(self.data)
             self.target = torch.from_numpy(self.target)
             self.info = torch.from_numpy(self.info)
+            self.target_classify = torch.from_numpy(self.target_classify)
 
         else:
-            self.data, self.target, self.info = gene2protein(stage = stage, size = size, pertage = pertage)
+            self.data, self.target, self.info, self.target_classify = gene2protein(stage = stage, size = size, pertage = pertage)
 
     def __len__(self):
         return self.target.shape[0]
 
     def __getitem__(self, idx):
-        return self.data[idx], self.target[idx], self.info[idx]
+        return self.data[idx], self.target[idx], self.info[idx],self.target_classify[idx]
 
 
 
@@ -342,5 +353,5 @@ def logit_accuracy(logits: torch.Tensor, target: torch.Tensor) -> float:
 if __name__ == '__main__':
     gene2protein(stage='valid', size = 1, pertage = 0.0)
 
-    # dataset = Data2target(stage='valid', size = 20, pertage = 0.15)
-    # print(f'after loading data, input shape: {dataset.data.shape} output shape: {dataset.target.shape} and index shape: {dataset.info.shape}')
+    #dataset = Data2target(stage='valid', size = 20, pertage = 0.15)
+    #print(f'after loading data, input shape: {dataset.data.shape} output shape: {dataset.target.shape} and index shape: {dataset.info.shape}')

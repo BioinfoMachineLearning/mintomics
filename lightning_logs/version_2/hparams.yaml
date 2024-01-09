@@ -1,0 +1,4 @@
+learning_rate: 0.0001
+attn_head: 1
+encoder_layers: 2
+n_class: 3469

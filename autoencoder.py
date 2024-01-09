@@ -149,7 +149,7 @@ def showAttention(input_sentence, output_words, attentions):
     # ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
 
     plt.show()
-
+    
 
 def train_model():
     kwargs = {
@@ -180,6 +180,7 @@ def train_model():
     losses = []
     avg_cos_row = []
     avg_cos_col = []
+    avg_roc = []
     for epoch in range(epochs):
         print(epoch)
         for (feature, _) in my_dataloader:
@@ -197,7 +198,7 @@ def train_model():
 
             cos_sim_row = cos_row(reconstructed, feature).mean()
             cos_sim_col = cos_col(reconstructed, feature).mean()
-
+            
             # print(roc_auc_score(feature.detach().numpy(), feature.detach().numpy()))
 
             #print(average_precision_score(feature.detach().numpy(), feature.detach().numpy()))
@@ -206,6 +207,7 @@ def train_model():
             losses.append(loss.detach().numpy())
             avg_cos_row.append(cos_sim_row.detach().numpy())
             avg_cos_col.append(cos_sim_col.detach().numpy())
+            
 
     fig, ax = plt.subplots(nrows=3, ncols=1, sharex=True)
     ax[0].plot(losses)
@@ -216,13 +218,14 @@ def train_model():
 
     ax[2].plot(avg_cos_col)
     ax[2].set_title('Columnwise Cosine Similarity')
-
+    #ax[3].plot(avg_roc)
+    #ax[3].set_title('ROC AUC Curve')
     fig.suptitle('Results')
     plt.show()
 
     showAttention(None, None, attention.detach())
 
-    att = (attention > 0.1)# .float()
+    att = (attention > 0.5)# .float()
 
     print(attention[att].shape)
 

@@ -23,13 +23,15 @@ from torchmetrics.regression import MeanSquaredError,R2Score,MeanAbsoluteError
 from Model import TransformerMintomics
 from argparse import ArgumentParser
 import scipy.signal as signal
-from Datamaker import Psedu_data 
-AVAIL_GPUS = [0]
+from PrepareDataset import Psedu_data , Data2target,gene2protein
+from prepare_test_data import Data2target_test
+
+AVAIL_GPUS = [1,2]
 NUM_NODES = 1
-BATCH_SIZE = 2
+BATCH_SIZE = 1
 DATALOADERS = 1
 ACCELERATOR = "gpu"
-EPOCHS = 2
+EPOCHS = 10
 ATT_HEAD = 1
 ENCODE_LAYERS = 2
 DATASET_DIR = "/home/aghktb/JOYS_PROJECT/mintomics"
@@ -37,7 +39,7 @@ DATASET_DIR = "/home/aghktb/JOYS_PROJECT/mintomics"
 #label_dict = read_csv(DATASET_DIR+"/Dataset/Labels_proc/Labels_control.csv",index_col=0)
 #label_dict = read_csv(DATASET_DIR+"/Dataset/Labels_proc/Labels_control.csv",index_col=0)
 #Num_classes = len(label_dict)
-Num_classes = 10
+Num_classes = 3060
 """
 
 torch.set_default_tensor_type(torch.FloatTensor)  # Ensure that the default tensor type is FloatTensor
@@ -60,7 +62,7 @@ class Mintomics(pl.LightningModule):
         
         self.save_hyperparameters()
         self.model = TransformerMintomics(attn_head=attn_head,encoder_layers=encoder_layers,n_class=n_class,**model_kwargs)
-        self.loss_fn = nn.BCELoss()
+        self.loss_fn = nn.BCEWithLogitsLoss()
        
         self.metrics_class = MetricCollection([BinaryAccuracy(),
                                          BinaryPrecision(),
@@ -91,22 +93,21 @@ class Mintomics(pl.LightningModule):
         
         
         inf = batch[2]
-        print(batch_data.shape)
+        #print(batch_data.shape)
         y_hat = self.forward(batch_data)
+        ##print(y_hat.shape)
+        batch_label_class = batch[3].cuda()
         
-        batch_label_class = batch[1].cuda()
+        class_pred = y_hat[:, inf[0, 1]]
         
-        class_pred = y_hat[:, inf[0, 0]].cuda()
-   
-        target = torch.transpose(batch_label_class, 1, 2)
-        target = target[:, inf[0, 1],:].squeeze()
-        print(class_pred.shape)
-        print(target.shape)
+        #target = torch.transpose(batch_label_class, 1, 2)
+        target = batch_label_class[:, inf[0, 1]]
+       
         #batch_label_class = batch_label_class[:,None].cuda()
 
         #class_pred = y_hat.view(-1) 
-        
-        loss_class = self.loss_fn(class_pred,target)
+      
+        loss_class = self.loss_fn(class_pred,target.float())
         metric_log_class = self.train_metrics_class(class_pred, target)
         self.log_dict(metric_log_class)
         loss = (loss_class)
@@ -118,24 +119,25 @@ class Mintomics(pl.LightningModule):
         
         
         inf = batch[2]
-        print(batch_data.shape)
+        #print(batch_data.shape)
         y_hat = self.forward(batch_data)
-        print(y_hat.shape)
-        batch_label_class = batch[1].type('torch.LongTensor').T.cuda()
-        #class_pred = y_hat[:, inf[0, 0], :]
-   
+        ##print(y_hat.shape)
+        batch_label_class = batch[3].cuda()
+        
+        class_pred = y_hat[:, inf[0, 1]]
+        
         #target = torch.transpose(batch_label_class, 1, 2)
-        #target = target[:, inf[0, 1], :]
+        target = batch_label_class[:, inf[0, 1]]
        
         #batch_label_class = batch_label_class[:,None].cuda()
 
-        class_pred = y_hat.view(-1) 
-        print(class_pred)
-        loss_class = self.loss_fn(class_pred,batch_label_class.view(-1).float())
-        metric_log_class = self.valid_metrics_class(class_pred, batch_label_class.int().squeeze())
+        #class_pred = y_hat.view(-1) 
+        
+        loss_class = self.loss_fn(class_pred,target.float())
+        metric_log_class = self.valid_metrics_class(class_pred, target)
         self.log_dict(metric_log_class)
         loss = (loss_class)
-        self.log('train_loss',loss, on_step=True, on_epoch=True, sync_dist=True)
+        self.log('valid_loss',loss, on_step=True, on_epoch=True, sync_dist=True)
         return loss
        
     
@@ -143,26 +145,49 @@ class Mintomics(pl.LightningModule):
         batch_data = batch[0]
         inf = batch[2]
         y_hat = self.forward(batch_data)
-        batch_label_class = batch[1].type('torch.LongTensor')
+        batch_label_class = batch[3].cuda()
         
-        batch_label_class = batch_label_class[:,None].cuda()
-
-        class_pred = y_hat[:, inf[0, 0], :]
-   
-        target = torch.transpose(batch_label_class, 1, 2)
-        target = target[:, inf[0, 1], :]
+        class_pred = y_hat[:, inf[0, 1]]
+        
+        #target = torch.transpose(batch_label_class, 1, 2)
+        target = batch_label_class[:, inf[0, 1]]
        
-        loss_class = self.loss_fn(class_pred,target)
-        metric_log_class = self.test_metrics_class(class_pred, batch_label_class.int().squeeze())
+        #batch_label_class = batch_label_class[:,None].cuda()
+
+        #class_pred = y_hat.view(-1) 
+        
+        loss_class = self.loss_fn(class_pred,target.float())
+        metric_log_class = self.test_metrics_class(class_pred, target)
         self.log_dict(metric_log_class)
         loss = (loss_class)
-        self.log('train_loss',loss, on_step=True, on_epoch=True, sync_dist=True)
+        self.log('test_loss',loss, on_step=True, on_epoch=True, sync_dist=True)
        
-        conf_mat = BinaryConfusionMatrix(num_classes=self.hparams.n_class).to("cuda")
-        conf_vals = conf_mat(class_pred, batch_label_class.squeeze())
-        print("Test Data Confusion Matrix: \n")
-        print(conf_vals)
+        #conf_mat = BinaryConfusionMatrix().to("cuda")
+        #conf_vals = conf_mat(class_pred, batch_label_class.squeeze())
+        #print("Test Data Confusion Matrix: \n")
+        #print(conf_vals)
+        return {f'preds_class' : class_pred, f'targets_class' :target}
         
+    def test_epoch_end(self, outputs):
+        # Log individual results for each dataset
+        
+        #for i  in range(len(outputs)):
+            dataset_outputs = outputs
+            torch.save(dataset_outputs,"Predictions.pt")
+            class_preds = torch.cat([x[f'preds_class'] for x in dataset_outputs])
+            class_targets = torch.cat([x[f'targets_class'] for x in dataset_outputs])
+            conf_mat = BinaryConfusionMatrix().to("cuda")
+            conf_vals = conf_mat(class_preds, class_targets)
+            fig = sns.heatmap(conf_vals.cpu() , annot=True, cmap="Blues", fmt="d")
+            
+            #attention = self.model.encod.self_attn.
+            #fig1 = plt.figure()
+            #ax = fig1.add_subplot(111)
+            #cax = ax.matshow(attention.cpu().numpy(), cmap='bone')
+            #fig1.colorbar(cax)
+
+            wandb.log({f"conf_mat" : wandb.Image(fig)})#,"attentions":wandb.Image(fig1)})
+            return super().test_epoch_end(outputs)
 
     @staticmethod
     def add_model_specific_args(parent_parser):
@@ -212,12 +237,14 @@ def train_mintomics_classifier():
     save_PATH = DATASET_DIR+"/Trainings/"+args.save_dir
     os.makedirs(save_PATH, exist_ok=True)
 
-    dataset = Psedu_data()
-    print(len(dataset))
-    train_size = int(0.7 * len(dataset))
-    val_size = int(0.1 * len(dataset))
-    test_size = len(dataset) - (train_size+val_size)
-    dataset_train,dataset_valid,dataset_test = torch.utils.data.random_split(dataset, [train_size, val_size,test_size])
+    # load data and get corresponding information
+    dataset_train = Data2target(stage='train', size = 2000, pertage = 0.15)  #100 samples each dp
+    dataset_valid = Data2target(stage='valid', size = 200, pertage = 0.15) 
+    dataset_test = Data2target_test(stage='test',size=300,pertage=0.15)
+    #train_size = int(0.7 * len(dataset))
+    #val_size = int(0.1 * len(dataset))
+    #test_size = len(dataset) - (train_size+val_size)
+    #dataset_train,dataset_valid,dataset_test = torch.utils.data.random_split(dataset, [train_size, val_size,test_size])
     
     #dataset_valid = MicrographDataValid(DATASET_DIR)
     #dataset_test = MicrographDataValid(DATASET_DIR) # using validation data for testing here
@@ -233,8 +260,8 @@ def train_mintomics_classifier():
     lr_monitor = LearningRateMonitor(logging_interval='epoch')
     early_stopping_callback = EarlyStopping(monitor='valid_loss', mode='min', min_delta=0.0, patience=30)
     trainer.callbacks = [checkpoint_callback, lr_monitor, early_stopping_callback]
-    #logger = WandbLogger(project=args.project_name, entity=args.entity_name,name=args.save_dir, offline=False, save_dir=".")
-    #trainer.logger = logger
+    logger = WandbLogger(project=args.project_name, entity=args.entity_name,name=args.save_dir, offline=False, save_dir=".")
+    trainer.logger = logger
     trainer.fit(model, train_loader, valid_loader)
     trainer.test(dataloaders=test_loader, ckpt_path='best')
    

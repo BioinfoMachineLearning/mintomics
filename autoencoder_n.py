@@ -45,7 +45,7 @@ def create_data():
     data['Protein'] = data.index.map(gene_map)
 
     tf_map = {}
-    tf_genes = pd.read_csv('./Mouse_TFs1.csv', header=None)[0].tolist()
+    tf_genes = pd.read_csv('./Mouse_TFs1', header=None)[0].tolist()
     tf_genes = set([i.upper() for i in tf_genes])
 
     data_genes = set(data.index.tolist())
