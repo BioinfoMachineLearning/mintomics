@@ -185,8 +185,8 @@ def gene2protein(stage = 'train', size = 10, pertage = 0.5):
         Gene_dat = dat  # gene data
         tar = torch.tensor(tar, dtype=torch.float32)  # protein data
 
-        P_lar = tar[tar > 0.7]
-        tar_clss = torch.as_tensor([1 if x>0.7 else 0 for x in tar])
+        P_lar = tar[tar > 0.6]
+        tar_clss = torch.as_tensor([1 if x>0.6 else 0 for x in tar])
         print(f'------- The number of original proterin: {tar.shape} and high expressed protein: {P_lar.shape} --------\n')
         print(tar_clss.shape)
         # print(tar)

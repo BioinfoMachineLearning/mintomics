@@ -17,7 +17,8 @@ from torch.utils.data import Dataset
 
 import wandb
 from torchmetrics import MetricCollection
-from torchmetrics.classification import BinaryAccuracy, BinaryRecall, BinaryPrecision, BinaryConfusionMatrix, BinaryF1Score,MulticlassAccuracy,MulticlassPrecision,MulticlassRecall,MulticlassF1Score,MulticlassConfusionMatrix
+from torchmetrics.classification import BinaryAccuracy, BinaryRecall, BinaryPrecision, BinaryConfusionMatrix, BinaryF1Score, MultilabelAccuracy, MultilabelF1Score, MultilabelConfusionMatrix,MultilabelPrecision,MultilabelRecall
+
 from torchmetrics.regression import MeanSquaredError,R2Score,MeanAbsoluteError
 
 from Model import TransformerMintomics
@@ -31,7 +32,7 @@ NUM_NODES = 1
 BATCH_SIZE = 1
 DATALOADERS = 1
 ACCELERATOR = "gpu"
-EPOCHS = 10
+EPOCHS = 1
 ATT_HEAD = 1
 ENCODE_LAYERS = 2
 DATASET_DIR = "/home/aghktb/JOYS_PROJECT/mintomics"
@@ -64,10 +65,14 @@ class Mintomics(pl.LightningModule):
         self.model = TransformerMintomics(attn_head=attn_head,encoder_layers=encoder_layers,n_class=n_class,**model_kwargs)
         self.loss_fn = nn.BCEWithLogitsLoss()
        
-        self.metrics_class = MetricCollection([BinaryAccuracy(),
-                                         BinaryPrecision(),
-                                         BinaryRecall(),
-                                         BinaryF1Score()])
+        self.metrics_class = MetricCollection([MultilabelAccuracy(num_labels=400,average='micro'),
+                                              MultilabelPrecision(num_labels=400,average='micro'),
+                                              MultilabelF1Score(num_labels=400,average='micro'),
+                                              MultilabelRecall(num_labels=400,average='micro')])
+        #self.metrics_class = MetricCollection([BinaryAccuracy(),
+        #                                 BinaryPrecision(),
+        #                                 BinaryRecall(),
+        #                                 BinaryF1Score()])
 
         self.train_metrics_class = self.metrics_class.clone(prefix="train_")
   
@@ -94,7 +99,7 @@ class Mintomics(pl.LightningModule):
         
         inf = batch[2]
         #print(batch_data.shape)
-        y_hat = self.forward(batch_data)
+        y_hat,_ = self.forward(batch_data)
         ##print(y_hat.shape)
         batch_label_class = batch[3].cuda()
         
@@ -106,7 +111,8 @@ class Mintomics(pl.LightningModule):
         #batch_label_class = batch_label_class[:,None].cuda()
 
         #class_pred = y_hat.view(-1) 
-      
+        print(target.shape)
+        print(class_pred.shape)
         loss_class = self.loss_fn(class_pred,target.float())
         metric_log_class = self.train_metrics_class(class_pred, target)
         self.log_dict(metric_log_class)
@@ -120,7 +126,7 @@ class Mintomics(pl.LightningModule):
         
         inf = batch[2]
         #print(batch_data.shape)
-        y_hat = self.forward(batch_data)
+        y_hat,_ = self.forward(batch_data)
         ##print(y_hat.shape)
         batch_label_class = batch[3].cuda()
         
@@ -144,7 +150,7 @@ class Mintomics(pl.LightningModule):
     def test_step(self,batch, batch_idx):
         batch_data = batch[0]
         inf = batch[2]
-        y_hat = self.forward(batch_data)
+        y_hat,attnt = self.forward(batch_data)
         batch_label_class = batch[3].cuda()
         
         class_pred = y_hat[:, inf[0, 1]]
@@ -166,7 +172,7 @@ class Mintomics(pl.LightningModule):
         #conf_vals = conf_mat(class_pred, batch_label_class.squeeze())
         #print("Test Data Confusion Matrix: \n")
         #print(conf_vals)
-        return {f'preds_class' : class_pred, f'targets_class' :target}
+        return {f'preds_class' : class_pred, f'targets_class' :target,f'attention':attnt}
         
     def test_epoch_end(self, outputs):
         # Log individual results for each dataset
@@ -176,17 +182,21 @@ class Mintomics(pl.LightningModule):
             torch.save(dataset_outputs,"Predictions.pt")
             class_preds = torch.cat([x[f'preds_class'] for x in dataset_outputs])
             class_targets = torch.cat([x[f'targets_class'] for x in dataset_outputs])
+            #conf_mat = BinaryConfusionMatrix().to("cuda")
+            print(class_preds.shape,class_targets.shape)
             conf_mat = BinaryConfusionMatrix().to("cuda")
             conf_vals = conf_mat(class_preds, class_targets)
+            print(conf_vals.shape)
             fig = sns.heatmap(conf_vals.cpu() , annot=True, cmap="Blues", fmt="d")
+            attention = torch.cat([x[f'attention'] for x in dataset_outputs]).squeeze()
+            #attention = self.model.encod.self_attn.in_proj_weight
+            fig1 = plt.figure()
+            ax = fig1.add_subplot(111)
+            cax = ax.matshow(attention.cpu().numpy(), cmap='bone')
+            fig1.colorbar(cax)
             
-            #attention = self.model.encod.self_attn.
-            #fig1 = plt.figure()
-            #ax = fig1.add_subplot(111)
-            #cax = ax.matshow(attention.cpu().numpy(), cmap='bone')
-            #fig1.colorbar(cax)
-
-            wandb.log({f"conf_mat" : wandb.Image(fig)})#,"attentions":wandb.Image(fig1)})
+            wandb.log({f"conf_mat" : wandb.Image(fig),"attentions":wandb.Image(fig1)})
+            
             return super().test_epoch_end(outputs)
 
     @staticmethod
@@ -238,9 +248,9 @@ def train_mintomics_classifier():
     os.makedirs(save_PATH, exist_ok=True)
 
     # load data and get corresponding information
-    dataset_train = Data2target(stage='train', size = 2000, pertage = 0.15)  #100 samples each dp
+    dataset_train = Data2target(stage='train', size = 1000, pertage = 0.15)  #100 samples each dp
     dataset_valid = Data2target(stage='valid', size = 200, pertage = 0.15) 
-    dataset_test = Data2target_test(stage='test',size=300,pertage=0.15)
+    dataset_test = Data2target_test(stage='test',size=100,pertage=0.15)
     #train_size = int(0.7 * len(dataset))
     #val_size = int(0.1 * len(dataset))
     #test_size = len(dataset) - (train_size+val_size)
@@ -262,6 +272,7 @@ def train_mintomics_classifier():
     trainer.callbacks = [checkpoint_callback, lr_monitor, early_stopping_callback]
     logger = WandbLogger(project=args.project_name, entity=args.entity_name,name=args.save_dir, offline=False, save_dir=".")
     trainer.logger = logger
+    wandb.init()
     trainer.fit(model, train_loader, valid_loader)
     trainer.test(dataloaders=test_loader, ckpt_path='best')
    
@@ -270,3 +281,4 @@ def train_mintomics_classifier():
 
 if __name__ == "__main__":
     train_mintomics_classifier()
+    wandb.finish()
