@@ -32,7 +32,7 @@ NUM_NODES = 1
 BATCH_SIZE = 1
 DATALOADERS = 1
 ACCELERATOR = "gpu"
-EPOCHS = 1
+EPOCHS = 4
 ATT_HEAD = 1
 ENCODE_LAYERS = 2
 DATASET_DIR = "/home/aghktb/JOYS_PROJECT/mintomics"
@@ -111,8 +111,7 @@ class Mintomics(pl.LightningModule):
         #batch_label_class = batch_label_class[:,None].cuda()
 
         #class_pred = y_hat.view(-1) 
-        print(target.shape)
-        print(class_pred.shape)
+        
         loss_class = self.loss_fn(class_pred,target.float())
         metric_log_class = self.train_metrics_class(class_pred, target)
         self.log_dict(metric_log_class)
@@ -183,10 +182,10 @@ class Mintomics(pl.LightningModule):
             class_preds = torch.cat([x[f'preds_class'] for x in dataset_outputs])
             class_targets = torch.cat([x[f'targets_class'] for x in dataset_outputs])
             #conf_mat = BinaryConfusionMatrix().to("cuda")
-            print(class_preds.shape,class_targets.shape)
+        
             conf_mat = BinaryConfusionMatrix().to("cuda")
             conf_vals = conf_mat(class_preds, class_targets)
-            print(conf_vals.shape)
+            
             fig = sns.heatmap(conf_vals.cpu() , annot=True, cmap="Blues", fmt="d")
             attention = torch.cat([x[f'attention'] for x in dataset_outputs]).squeeze()
             #attention = self.model.encod.self_attn.in_proj_weight
@@ -248,9 +247,9 @@ def train_mintomics_classifier():
     os.makedirs(save_PATH, exist_ok=True)
 
     # load data and get corresponding information
-    dataset_train = Data2target(stage='train', size = 1000, pertage = 0.15)  #100 samples each dp
+    dataset_train = Data2target(stage='train', size = 500, pertage = 0.15)  #100 samples each dp
     dataset_valid = Data2target(stage='valid', size = 200, pertage = 0.15) 
-    dataset_test = Data2target_test(stage='test',size=100,pertage=0.15)
+    dataset_test = Data2target_test(stage='test',size=25,pertage=0.15)
     #train_size = int(0.7 * len(dataset))
     #val_size = int(0.1 * len(dataset))
     #test_size = len(dataset) - (train_size+val_size)
