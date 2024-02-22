@@ -31,9 +31,9 @@ class TransformerMintomics(nn.Module):
         x,attnt = self.encod(x)
         
         #print(x.shape)
-        x = self.layernorm(x)
-        x = self.activation_ELU(x)
-        x = self.transformer_encoder(x)
+        #x = self.layernorm(x)
+        #x = self.activation_ELU(x)
+        #x = self.transformer_encoder(x)
         #print(x.shape)
         x = torch.mean(x, dim=1)
         
@@ -110,7 +110,7 @@ class TransformerEncoderLayer(nn.Module):
 
     def __init__(self, d_model: int, nhead: int, dim_feedforward: int = 2048, dropout: float = 0.1,
                  activation: Union[str, Callable[[Tensor], Tensor]] = F.relu,
-                 layer_norm_eps: float = 1e-5, batch_first: bool = False, norm_first: bool = False,
+                 layer_norm_eps: float = 1e-1, batch_first: bool = False, norm_first: bool = False,
                  device=None, dtype=None) -> None:
         factory_kwargs = {'device': device, 'dtype': dtype}
         super().__init__()

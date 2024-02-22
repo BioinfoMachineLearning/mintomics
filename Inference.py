@@ -32,6 +32,9 @@ from argparse import ArgumentParser
 import scipy.signal as signal
 from PrepareDataset import Psedu_data , Data2target,gene2protein
 from prepare_test_data import Data2target_test
+from scipy.cluster import hierarchy
+import fastcluster
+
 DATA_DIR = '/home/aghktb/JOYS_Project/mintomics'
 root = '/bmlfast/joy_RNA/Data/'
 dir_in = 'bulkRNA_p_'
@@ -80,6 +83,8 @@ class Mintomics(pl.LightningModule):
     def test_step(self,batch, batch_idx):
         batch_data = batch[0]
         inf = batch[2]
+        
+        
         y_hat,attnt = self.forward(batch_data)
         batch_label_class = batch[3]
         
@@ -88,13 +93,18 @@ class Mintomics(pl.LightningModule):
         #target = torch.transpose(batch_label_class, 1, 2)
         target = batch_label_class[:, inf[0, 1]]
         
+        
+        
+        #target = target_1[:,ind]
+        #class_pred = class_pred_1[:,ind]
+        print(class_pred.shape,target.shape)
         #batch_label_class = batch_label_class[:,None].cuda()
 
         #class_pred = y_hat.view(-1) 
         
         loss_class = self.loss_fn(class_pred,target.float())
-        metric_log_class = self.test_metrics_class(class_pred, target)
-        self.log_dict(metric_log_class)
+        #metric_log_class = self.test_metrics_class(class_pred, target)
+        #self.log_dict(metric_log_class)
         metric_log_class1 = self.test_metrics_class1(class_pred, target)
         self.log_dict(metric_log_class1)
         loss = (loss_class)
@@ -104,7 +114,7 @@ class Mintomics(pl.LightningModule):
         #conf_vals = conf_mat(class_pred, batch_label_class.squeeze())
         #print("Test Data Confusion Matrix: \n")
         #print(conf_vals)
-        return {f'preds_class' : class_pred, f'targets_class' :target,f'attention':attnt}
+        return {f'preds_class' : class_pred, f'targets_class' :target,f'attention':attnt,f'inf':inf}
         
     def test_epoch_end(self, outputs):
         # Log individual results for each dataset
@@ -118,13 +128,52 @@ class Mintomics(pl.LightningModule):
             conf_mat = BinaryConfusionMatrix()
             conf_vals = conf_mat(class_preds, class_targets)
             fig = sns.heatmap(conf_vals.cpu() , annot=True, cmap="Blues", fmt="d")
+            ind = torch.nonzero(class_targets[0,:]>0.8)
             attention = torch.cat([x[f'attention'] for x in dataset_outputs]).squeeze()
+            inf = torch.cat([x[f'inf'] for x in dataset_outputs]).squeeze()
+            print(inf.shape)
+            attention1 = attention.fill_diagonal_(0)
+            attention1 = attention1[:,inf[0]]
+            attention2 = attention1[:,ind].squeeze()
+            print(inf.shape, attention2.shape)
+            # Get top 100 genes along rows for all columns
+            top_genes_values, top_genes_indices = torch.topk(attention2, k=500, dim=0)
+            mask = torch.zeros_like(attention2)
+            print(top_genes_values)
+            mask[top_genes_indices, torch.arange(attention2.shape[1])] = 1.0*10000
             
+            print(mask)
+            # Multiply the mask with the selected portion to keep only the top genes values
+            attention2 = attention2 * mask
+            # Calculate the hierarchical clustering
+            # Calculate the hierarchical clustering
+            #row_linkage = hierarchy.linkage(attention2, method='average')
+            #col_linkage = hierarchy.linkage(attention2.T, method='average')
+
+            # Reorder the matrix rows and columns based on the clustering
+            #idx_row = hierarchy.dendrogram(row_linkage, no_plot=True)['leaves']
+            #idx_col = hierarchy.dendrogram(col_linkage, no_plot=True)['leaves']
+            # Calculate the hierarchical clustering
+            #row_clusters = fastcluster.linkage(attention2, method='average')
+            #col_clusters = fastcluster.linkage(attention2.T, method='average')
+            
+            # Plot the dendrogram for rows
+            fig1 = plt.figure(figsize=(80, 20))
+            sns.heatmap(attention2.T, cmap='rocket_r')
+            plt.title("Scaled Attentions of Top 500  Genes Influencing Protein-Coding Gene Expressions")
+            plt.xlabel("All Genes ")
+            plt.ylabel("Protein-Coding Genes")
+            plt.show()
+            # Plot the reordered matrix
+            #fig1 = plt.figure(figsize=(10, 10))
+            #sns.clustermap(attention2, cmap='bone')
+            #plt.show()
             #attention = self.model.encod.self_attn.
-            fig1 = plt.figure()
-            ax = fig1.add_subplot(111)
-            cax = ax.matshow(attention.cpu().numpy(), cmap='bone')
-            fig1.colorbar(cax)
+            #fig1 = plt.figure(figsize=(50, 100))
+            #ax = fig1.add_subplot(111)
+            #cax = ax.matshow(attention2.cpu().numpy(), cmap='bone')
+            #cax.autoscale()
+            #fig1.colorbar(cax)
             
             wandb.log({f"conf_mat" : wandb.Image(fig),"attentions":wandb.Image(fig1)})
             
@@ -158,10 +207,11 @@ def train_mintomics_classifier():
     test_loader = DataLoader(dataset=dataset_test, batch_size=BATCH_SIZE, shuffle=False, num_workers=DATALOADERS)
     model = Mintomics(learning_rate=1e-4,n_class=Num_classes)
     trainer = pl.Trainer.from_argparse_args(args)
-    logger = WandbLogger(project=args.project_name, entity=args.entity_name,name=args.save_dir+"_test2", offline=False, save_dir=".")
+    logger = WandbLogger(project=args.project_name, entity=args.entity_name,name=args.save_dir+"_test_highpro", offline=False, save_dir=".")
     trainer.logger = logger
     pest_checkpoint = DATASET_DIR+"/Trainings/"+args.save_dir+"/"+args.chkpt
     trainer.test(model, dataloaders=test_loader, ckpt_path=pest_checkpoint)
 
 if __name__ == "__main__":
     train_mintomics_classifier()
+    

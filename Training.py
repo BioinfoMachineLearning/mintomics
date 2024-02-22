@@ -171,28 +171,60 @@ class Mintomics(pl.LightningModule):
         #conf_vals = conf_mat(class_pred, batch_label_class.squeeze())
         #print("Test Data Confusion Matrix: \n")
         #print(conf_vals)
-        return {f'preds_class' : class_pred, f'targets_class' :target,f'attention':attnt}
+        return {f'preds_class' : class_pred, f'targets_class' :target,f'attention':attnt,f'inf':inf}
         
     def test_epoch_end(self, outputs):
         # Log individual results for each dataset
         
         #for i  in range(len(outputs)):
             dataset_outputs = outputs
-            torch.save(dataset_outputs,"Predictions.pt")
+            
+            #torch.save(dataset_outputs,"Predictions.pt")
             class_preds = torch.cat([x[f'preds_class'] for x in dataset_outputs])
             class_targets = torch.cat([x[f'targets_class'] for x in dataset_outputs])
-            #conf_mat = BinaryConfusionMatrix().to("cuda")
-        
-            conf_mat = BinaryConfusionMatrix().to("cuda")
+            conf_mat = BinaryConfusionMatrix()
             conf_vals = conf_mat(class_preds, class_targets)
-            
             fig = sns.heatmap(conf_vals.cpu() , annot=True, cmap="Blues", fmt="d")
+            ind = torch.nonzero(class_targets[0,:]>0.8)
             attention = torch.cat([x[f'attention'] for x in dataset_outputs]).squeeze()
-            #attention = self.model.encod.self_attn.in_proj_weight
-            fig1 = plt.figure()
-            ax = fig1.add_subplot(111)
-            cax = ax.matshow(attention.cpu().numpy(), cmap='bone')
-            fig1.colorbar(cax)
+            inf = torch.cat([x[f'inf'] for x in dataset_outputs]).squeeze()
+            attention1 = attention[:,inf[0,:]]
+            attention2 = attention1[:,ind].squeeze()
+            print(inf.shape, attention2.shape)
+            # Get top 100 genes along rows for all columns
+            top_genes_values, top_genes_indices = torch.topk(attention2, k=1000, dim=0)
+            mask = torch.zeros_like(attention2)
+            
+            mask[top_genes_indices, torch.arange(attention2.shape[1])] = 1.0
+            print(mask)
+            # Multiply the mask with the selected portion to keep only the top genes values
+            attention2 = attention2 * mask
+            # Calculate the hierarchical clustering
+            # Calculate the hierarchical clustering
+            #row_linkage = hierarchy.linkage(attention2, method='average')
+            #col_linkage = hierarchy.linkage(attention2.T, method='average')
+
+            # Reorder the matrix rows and columns based on the clustering
+            #idx_row = hierarchy.dendrogram(row_linkage, no_plot=True)['leaves']
+            #idx_col = hierarchy.dendrogram(col_linkage, no_plot=True)['leaves']
+            # Calculate the hierarchical clustering
+            #row_clusters = fastcluster.linkage(attention2, method='average')
+            #col_clusters = fastcluster.linkage(attention2.T, method='average')
+            
+            # Plot the dendrogram for rows
+            fig1 = plt.figure(figsize=(10, 20))
+            sns.heatmap(attention2, cmap='rocket_r')
+            plt.show()
+            # Plot the reordered matrix
+            #fig1 = plt.figure(figsize=(10, 10))
+            #sns.clustermap(attention2, cmap='bone')
+            #plt.show()
+            #attention = self.model.encod.self_attn.
+            #fig1 = plt.figure(figsize=(50, 100))
+            #ax = fig1.add_subplot(111)
+            #cax = ax.matshow(attention2.cpu().numpy(), cmap='bone')
+            #cax.autoscale()
+            #fig1.colorbar(cax)
             
             wandb.log({f"conf_mat" : wandb.Image(fig),"attentions":wandb.Image(fig1)})
             
