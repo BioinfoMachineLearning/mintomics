@@ -1,0 +1,103 @@
+Restoring states from the checkpoint path at /home/aghktb/JOYS_PROJECT/mintomics/Trainings/Mintomics_classify_till_1_5days_1emblay_single_lay_laynorm/mintomics_epoch=02_valid_loss=0.011209.ckpt
+Loaded model weights from checkpoint at /home/aghktb/JOYS_PROJECT/mintomics/Trainings/Mintomics_classify_till_1_5days_1emblay_single_lay_laynorm/mintomics_epoch=02_valid_loss=0.011209.ckpt
+/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/trainer/connectors/data_connector.py:224: PossibleUserWarning: The dataloader, test_dataloader 0, does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` (try 80 which is the number of cpus on this machine) in the `DataLoader` init to improve performance.
+  rank_zero_warn(
+Traceback (most recent call last):
+  File "/home/aghktb/JOYS_Project/mintomics/Inference.py", line 232, in <module>
+    train_mintomics_classifier()
+  File "/home/aghktb/JOYS_Project/mintomics/Inference.py", line 229, in train_mintomics_classifier
+    trainer.test(model, dataloaders=test_loader, ckpt_path=pest_checkpoint)
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/trainer/trainer.py", line 780, in test
+    return call._call_and_handle_interrupt(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/trainer/call.py", line 38, in _call_and_handle_interrupt
+    return trainer_fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/trainer/trainer.py", line 829, in _test_impl
+    results = self._run(model, ckpt_path=self.ckpt_path)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/trainer/trainer.py", line 1098, in _run
+    results = self._run_stage()
+              ^^^^^^^^^^^^^^^^^
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/trainer/trainer.py", line 1174, in _run_stage
+    return self._run_evaluate()
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/trainer/trainer.py", line 1214, in _run_evaluate
+    eval_loop_results = self._evaluation_loop.run()
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/loops/loop.py", line 206, in run
+    output = self.on_run_end()
+             ^^^^^^^^^^^^^^^^^
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/loops/dataloader/evaluation_loop.py", line 180, in on_run_end
+    self._evaluation_epoch_end(self._outputs)
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/loops/dataloader/evaluation_loop.py", line 288, in _evaluation_epoch_end
+    self.trainer._call_lightning_module_hook(hook_name, output_or_outputs)
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/trainer/trainer.py", line 1342, in _call_lightning_module_hook
+    output = fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^
+  File "/home/aghktb/JOYS_Project/mintomics/Inference.py", line 182, in test_epoch_end
+    tf_df_T.tocsv("/home/aghktb/JOYS_PROJECT/mintomics/Tfs_highprot.csv")
+    ^^^^^^^^^^^^^
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/pandas/core/generic.py", line 5989, in __getattr__
+    return object.__getattribute__(self, name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'DataFrame' object has no attribute 'tocsv'
+Testing DataLoader 0:   0%|                                                                                                           | 0/1 [00:00<?, ?it/s]torch.Size([1, 2406]) torch.Size([1, 2406])
+Testing DataLoader 0: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  1.93it/s]          Unnamed: 0  IU_2.5preg_n1  IU_2.5preg_n2  IU_2.5preg_n3  IA_2.5preg_n1  IA_2.5preg_n2  IA_2.5preg_n3
+0               Xkr4       1.139365       1.381432       0.884084       0.428088       0.544300       0.532467
+1            Gm19938       0.000000       0.016648       0.113826       0.062999       0.000000       0.000000
+2                Rp1       2.050768       1.913082       2.372558       4.817127       4.925382       4.954973
+3              Sox17       7.204096       7.076327       7.302768       5.502545       5.579611       5.426232
+4             Mrpl15       3.866865       3.846703       3.912610       3.852092       3.857649       3.860580
+...              ...            ...            ...            ...            ...            ...            ...
+21185  G530011O06Rik       1.896770       1.412476       2.041767       2.147589       1.440409       1.536936
+21186           Asmt       0.000000       0.083149       0.000000       0.104875       0.138588       0.128413
+21187          Ddx3y       0.000000       0.016648       0.000000       0.000000       0.015447       0.000000
+21188     Gapdh-ps15       0.635023       0.311280       0.523331       0.290103       0.348224       0.390598
+21189         Erdr1x       2.429426       2.371682       4.080882       4.435093       1.676475       2.992597
+[21190 rows x 7 columns]
+  Unnamed: 0  IU_2.5preg_n1  IU_2.5preg_n2  IU_2.5preg_n3  IA_2.5preg_n1  IA_2.5preg_n2  IA_2.5preg_n3
+0       Xkr4       1.139365       1.381432       0.884084       0.428088       0.544300       0.532467
+1    Gm19938       0.000000       0.016648       0.113826       0.062999       0.000000       0.000000
+2        Rp1       2.050768       1.913082       2.372558       4.817127       4.925382       4.954973
+3      Sox17       7.204096       7.076327       7.302768       5.502545       5.579611       5.426232
+4     Mrpl15       3.866865       3.846703       3.912610       3.852092       3.857649       3.860580
+2406
+108
+torch.Size([1922, 108])
+torch.Size([25, 108])
+108
+       Ywhae     Ywhaz       Pgd      Serpina1a      Serpina1b      Serpina1d  ...       Ltf     Ttc38            Ttr      Usp5       Vcl             Gc
+0      Dnah5     Dnah5     Dnah5         Slc5a5         Slc5a5         Slc5a5  ...     Dnah5     Dnah5         Slc5a5     Dnah5     Dnah5         Slc5a5
+1      Nudt4     Nudt4     Nudt4  2300002M23Rik  2300002M23Rik  2300002M23Rik  ...     Nudt4     Nudt4  2300002M23Rik     Nudt4     Nudt4  2300002M23Rik
+2     Tubb4b    Tubb4b    Tubb4b          Adcy8          Adcy8          Adcy8  ...    Tubb4b    Tubb4b          Adcy8    Tubb4b    Tubb4b          Adcy8
+3     Ttc21a    Ttc21a    Ttc21a           Lgi1           Lgi1           Lgi1  ...    Ttc21a    Ttc21a           Lgi1    Ttc21a    Ttc21a           Lgi1
+4     Cdc14a    Cdc14a    Cdc14a           Mmp7           Mmp7           Mmp7  ...    Cdc14a    Cdc14a           Mmp7    Cdc14a    Cdc14a           Mmp7
+5     Kif19a    Kif19a    Kif19a          Tex21          Tex21          Tex21  ...    Kif19a    Ctnnb1        Sectm1a    Kif19a    Kif19a        Sectm1a
+6     Hspa4l    Hspa4l    Hspa4l        Sectm1a         Dio3os         Dio3os  ...    Hspa4l    Kif19a          Tex21    Hspa4l    Hspa4l          Tex21
+7     Ctnnb1    Ctnnb1     Ptpru         Dio3os        Fam124b        Sectm1a  ...    Ctnnb1    Hspa4l         Dio3os    Ctnnb1     Ptpru         Dio3os
+8      Ptpru     Ptpru    Ctnnb1            A2m            A2m            A2m  ...     Ptpru      Pdxk            A2m     Ptpru    Dnaaf1            A2m
+9       Pdxk      Pdxk    Dnaaf1          Them5        Sectm1a        Fam124b  ...    Dnaaf1     Ptpru          Them5      Pdxk    Ctnnb1          Them5
+10     Calm3    Dnaaf1      Sntn        Fam124b    D13Ertd608e          Them5  ...      Pdxk     Calm3          Gp1bb    Dnaaf1      Sntn          Gp1bb
+11    Dnaaf1     Calm3      Pdxk          Gp1bb          Them5          Gp1bb  ...      Sntn       ND1        Fam124b      Sntn     Clic6        Fam124b
+12      Sntn      Sntn     Calm3        Bcl2l15          Gp1bb    D13Ertd608e  ...     Calm3      Sntn        Bcl2l15     Calm3     Gm973        Bcl2l15
+13     Gm973     Gm973     Gm973    D13Ertd608e        Bcl2l15        Bcl2l15  ...     Gm973    Dnaaf1    D13Ertd608e     Gm973   Fam183b    D13Ertd608e
+14       ND1     Clic6     Clic6          Ovol1          Ovol1          Ovol1  ...     Clic6     Gm973          Ovol1     Clic6      Pdxk          Ovol1
+15     Clic6       ND1   Fam183b         Egfros        Galnt14        Siglech  ...       ND1    Scarb2         Egfros       ND1     Calm3         Egfros
+16    Scarb2    Scarb2  Togaram2        Siglech        Siglech         Egfros  ...   Fam183b      Ptma        Siglech   Fam183b     Dnai3        Siglech
+17   Fam183b   Fam183b    Scarb2        Galnt14          Tmco2        Galnt14  ...    Scarb2    Celsr1        Galnt14    Scarb2  Togaram2        Galnt14
+18  Togaram2  Togaram2       ND1           Sgcd         Egfros          Tmco2  ...  Togaram2     Clic6           Sgcd  Togaram2  BC051019           Sgcd
+19    Celsr1     Dnai3     Dnai3           Esp8           Esp8           Sgcd  ...     Dnai3      Gnas         Ptger3     Dnai3     Ttll3         Ptger3
+20      Ptma    Celsr1     Ttll3         Ptger3           Sgcd           Esp8  ...   Dync2h1  Togaram2           Esp8   Dync2h1    Scarb2           Esp8
+21     Dnai3   Dync2h1   Dync2h1          Tmco2         Ptger3         Ptger3  ...     Ttll3      Ddx5          Tmco2     Ttll3   Dync2h1          Tmco2
+22      Gnas     Ttll3  BC051019         Twist2           Aox2           Aox2  ...    Celsr1   Fam183b         Twist2    Celsr1     Tekt1         Twist2
+23   Dync2h1      Ptma     Tekt1         Rnf152        Slitrk3         Twist2  ...  BC051019   Dync2h1         Rnf152  BC051019       ND1         Rnf152
+24     Ttll3  BC051019    Celsr1           Aox2         Twist2        Slitrk3  ...      Ptma     Dnai3            Tro      Ptma    Celsr1            Tro
+[25 rows x 108 columns]
+tensor([[0.7957, 0.7221, 0.6284,  ..., 0.6256, 0.6781, 0.5236],
+        [0.7831, 0.7126, 0.6228,  ..., 0.6203, 0.6695, 0.5073],
+        [0.7771, 0.7080, 0.6201,  ..., 0.6177, 0.6655, 0.4962],
+        ...,
+        [0.7285, 0.6725, 0.6001,  ..., 0.5979, 0.6388, 0.4714],
+        [0.7285, 0.6724, 0.5997,  ..., 0.5976, 0.6376, 0.4708],
+        [0.7278, 0.6717, 0.5995,  ..., 0.5975, 0.6359, 0.4706]])

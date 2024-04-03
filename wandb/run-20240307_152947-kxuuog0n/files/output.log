@@ -1,0 +1,120 @@
+Restoring states from the checkpoint path at /home/aghktb/JOYS_PROJECT/mintomics/Trainings/Mintomics_classify_till_1_5days_1emblay_single_lay_laynorm/mintomics_epoch=02_valid_loss=0.011209.ckpt
+Loaded model weights from checkpoint at /home/aghktb/JOYS_PROJECT/mintomics/Trainings/Mintomics_classify_till_1_5days_1emblay_single_lay_laynorm/mintomics_epoch=02_valid_loss=0.011209.ckpt
+/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/trainer/connectors/data_connector.py:224: PossibleUserWarning: The dataloader, test_dataloader 0, does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` (try 80 which is the number of cpus on this machine) in the `DataLoader` init to improve performance.
+  rank_zero_warn(
+Testing DataLoader 0:   0%|                                                                                                           | 0/1 [00:00<?, ?it/s]torch.Size([1, 2406]) torch.Size([1, 2406])
+Testing DataLoader 0: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  1.84it/s]          Unnamed: 0  IU_2.5preg_n1  IU_2.5preg_n2  IU_2.5preg_n3  IA_2.5preg_n1  IA_2.5preg_n2  IA_2.5preg_n3
+0               Xkr4       1.139365       1.381432       0.884084       0.428088       0.544300       0.532467
+1            Gm19938       0.000000       0.016648       0.113826       0.062999       0.000000       0.000000
+2                Rp1       2.050768       1.913082       2.372558       4.817127       4.925382       4.954973
+3              Sox17       7.204096       7.076327       7.302768       5.502545       5.579611       5.426232
+4             Mrpl15       3.866865       3.846703       3.912610       3.852092       3.857649       3.860580
+...              ...            ...            ...            ...            ...            ...            ...
+21185  G530011O06Rik       1.896770       1.412476       2.041767       2.147589       1.440409       1.536936
+21186           Asmt       0.000000       0.083149       0.000000       0.104875       0.138588       0.128413
+21187          Ddx3y       0.000000       0.016648       0.000000       0.000000       0.015447       0.000000
+21188     Gapdh-ps15       0.635023       0.311280       0.523331       0.290103       0.348224       0.390598
+21189         Erdr1x       2.429426       2.371682       4.080882       4.435093       1.676475       2.992597
+[21190 rows x 7 columns]
+  Unnamed: 0  IU_2.5preg_n1  IU_2.5preg_n2  IU_2.5preg_n3  IA_2.5preg_n1  IA_2.5preg_n2  IA_2.5preg_n3
+0       Xkr4       1.139365       1.381432       0.884084       0.428088       0.544300       0.532467
+1    Gm19938       0.000000       0.016648       0.113826       0.062999       0.000000       0.000000
+2        Rp1       2.050768       1.913082       2.372558       4.817127       4.925382       4.954973
+3      Sox17       7.204096       7.076327       7.302768       5.502545       5.579611       5.426232
+4     Mrpl15       3.866865       3.846703       3.912610       3.852092       3.857649       3.860580
+2406
+108
+torch.Size([1922, 108])
+torch.Size([25, 108])
+108
+       Ywhae     Ywhaz       Pgd      Serpina1a      Serpina1b      Serpina1d  ...       Ltf     Ttc38            Ttr      Usp5       Vcl             Gc
+0     Tubb4b    Tubb4b    Tubb4b         Slc5a5         Slc5a5         Slc5a5  ...    Tubb4b    Tubb4b         Slc5a5    Tubb4b    Tubb4b         Slc5a5
+1   Hsp90aa1  Hsp90aa1  Hsp90aa1         B3gnt5         B3gnt5         B3gnt5  ...  Hsp90aa1  Hsp90aa1         B3gnt5  Hsp90aa1  Hsp90aa1         B3gnt5
+2       Drc3      Drc3      Drc3           Drd4           Drd4           Drd4  ...      Drc3      Drc3           Drd4      Drc3      Drc3           Drd4
+3    Lrrc10b   Lrrc10b   Lrrc10b        Mab21l3        Mab21l3        Mab21l3  ...   Lrrc10b   Lrrc10b        Mab21l3   Lrrc10b   Lrrc10b        Mab21l3
+4     Dnah11    Dnah11  AU040972  2300002M23Rik  2300002M23Rik  2300002M23Rik  ...  AU040972     Ovgp1  2300002M23Rik     Odf3b  AU040972  2300002M23Rik
+5      Odf3b     Odf3b     Ttc29           Ly6f           Ly6f           Ly6f  ...     Odf3b    Dnah11           Ly6f  AU040972     Ttc29           Ly6f
+6      Ttc29     Ttc29     Odf3b           Gldc           Gldc           Gldc  ...     Ttc29     Odf3b           Gldc    Dnah11     Odf3b           Gldc
+7      Ovgp1  AU040972    Dnah11        Itprid1        Itprid1        Itprid1  ...    Dnah11     Ttc29        Itprid1     Ttc29    Dnah11        Itprid1
+8   AU040972     Ovgp1   Fam183b        Ube2ql1        Ube2ql1        Ube2ql1  ...    Gprc5c    Gprc5c        Ube2ql1    Gprc5c   Fam183b        Ube2ql1
+9     Gprc5c    Gprc5c    Gprc5c         Gm8801         Gm8801         Gm8801  ...     Ovgp1    Igfbp4         Gm8801     Ovgp1    Gprc5c         Gm8801
+10   Fam183b   Fam183b     Ovgp1          Trpm5          Trpm5          Trpm5  ...   Fam183b  AU040972          Trpm5   Fam183b     Ovgp1          Trpm5
+11    Igfbp4    Igfbp4    Igfbp4          Cspg4          Cspg4          Cspg4  ...    Igfbp4   Fam183b          Cspg4    Igfbp4    Igfbp4          Cspg4
+12  Atp6v1c1   Map3k19   Map3k19            Ada            Ada            Ada  ...   Map3k19   Hsp90b1            Ada   Map3k19   Map3k19            Ada
+13   Hsp90b1  Atp6v1c1      Mns1          Sall1          Cpne7          Cpne7  ...      Mns1  Atp6v1c1          Sall1      Mns1      Mns1          Sall1
+14   Map3k19      Mns1  Atp6v1c1          Noxa1        Pla2g2f          Noxa1  ...  Atp6v1c1     Crip2          Noxa1  Atp6v1c1  Atp6v1c1          Noxa1
+15     Syne1     Syne1     Syne1          Cpne7           Gdf7        Pla2g2f  ...     Syne1     Syne1          Cpne7     Syne1     Syne1          Cpne7
+16     Crip2     Crip2     Crip2           Gdf7          Noxa1          Sall1  ...     Crip2     Gstm2           Gdf7     Crip2    Adarb1           Gdf7
+17      Mns1   Hsp90b1    Adarb1        Pla2g2f           Arsi           Gdf7  ...   Hsp90b1   Map3k19        Pla2g2f   Hsp90b1     Crip2        Pla2g2f
+18     Gstm2    Adarb1   Hsp90b1          Hoxa2          Hoxa2          Hoxa2  ...    Adarb1   Mid1ip1          Hoxa2    Adarb1    Lrrc46          Hoxa2
+19   Mid1ip1   Mid1ip1   Mid1ip1           Arsi         Hoxa11           Arsi  ...   Mid1ip1      Mns1           Arsi   Mid1ip1   Hsp90b1           Arsi
+20    Adarb1     Gstm2    Lrrc46         Hoxa11          Sall1         Hoxa11  ...     Gstm2    Adarb1         Hoxa11     Gstm2   Mid1ip1         Hoxa11
+21     Ift80     Ift80     Ift80           Frzb           Frzb           Frzb  ...    Lrrc46     Ift80           Frzb     Ift80     Ift80           Frzb
+22      Aoc1    Lrrc46      Aoc1         Kcnip3          Grip2            Tro  ...     Ift80     Fndc7         Kcnip3    Lrrc46      Aoc1         Kcnip3
+23    Ruvbl2      Aoc1    Ruvbl2            Tro            Tro          Grip2  ...      Aoc1     Pcbp2            Tro      Aoc1    Ruvbl2            Tro
+24     Pcbp2    Ruvbl2     Gstm2          Grip2  B230312C02Rik         Kcnip3  ...    Ruvbl2      Aoc1          Grip2    Ruvbl2     Gstm2          Grip2
+[25 rows x 108 columns]
+       Ywhae     Ywhaz       Pgd  Serpina1a  Serpina1b  Serpina1d     Actg1  ...      Tpi1       Ltf     Ttc38       Ttr      Usp5       Vcl        Gc
+0   0.777100  0.708037  0.620117   0.521847   0.506980   0.514644  0.791802  ...  0.703247  0.860391  0.586245  0.523704  0.617750  0.681489  0.523617
+1   0.776742  0.707730  0.619916   0.518303   0.504837   0.511803  0.791328  ...  0.702963  0.859802  0.586159  0.519935  0.617570  0.681191  0.519871
+2   0.761268  0.697424  0.614808   0.513679   0.501601   0.507851  0.777295  ...  0.692554  0.841747  0.580911  0.515162  0.612058  0.674017  0.515079
+3   0.746287  0.686442  0.608554   0.510847   0.497668   0.504380  0.761496  ...  0.681832  0.821749  0.576287  0.512664  0.605907  0.664510  0.512504
+4   0.739182  0.680892  0.606039   0.505926   0.494680   0.500413  0.753992  ...  0.676505  0.812034  0.574559  0.507460  0.602757  0.661592  0.507335
+5   0.738821  0.680892  0.605487   0.496818   0.488871   0.492949  0.753484  ...  0.676403  0.811675  0.574278  0.497865  0.602730  0.660169  0.497763
+6   0.737744  0.680581  0.605317   0.493196   0.486106   0.489733  0.753468  ...  0.675934  0.811540  0.574012  0.494132  0.602706  0.659561  0.494038
+7   0.736394  0.680325  0.605122   0.492281   0.484641   0.488526  0.753246  ...  0.675333  0.811428  0.573380  0.493326  0.602687  0.659157  0.493196
+8   0.736153  0.676901  0.602371   0.484210   0.479202   0.481731  0.746290  ...  0.673305  0.802775  0.572919  0.484972  0.600032  0.655217  0.484838
+9   0.733833  0.676384  0.602110   0.483132   0.476864   0.479967  0.746057  ...  0.672316  0.802419  0.572358  0.484189  0.600028  0.654136  0.483983
+10  0.731461  0.675610  0.601384   0.481064   0.475906   0.478460  0.745771  ...  0.671202  0.802275  0.572323  0.481900  0.599794  0.652132  0.481759
+11  0.730584  0.673167  0.599646   0.479868   0.475165   0.477479  0.740974  ...  0.669477  0.796256  0.571590  0.480680  0.598028  0.649973  0.480536
+12  0.722402  0.667846  0.597758   0.479386   0.474330   0.476819  0.734896  ...  0.663843  0.788307  0.569940  0.480239  0.595335  0.648253  0.480073
+13  0.721915  0.667603  0.597490   0.477122   0.472349   0.473900  0.734170  ...  0.663680  0.787366  0.569480  0.478390  0.595025  0.647879  0.478134
+14  0.721213  0.667287  0.596754   0.476587   0.472265   0.473738  0.733474  ...  0.663127  0.786749  0.569169  0.477470  0.594948  0.645930  0.477321
+15  0.720965  0.666593  0.596202   0.475535   0.472066   0.473634  0.732103  ...  0.662842  0.785078  0.569041  0.476129  0.594379  0.645154  0.475990
+16  0.720957  0.666259  0.595779   0.475163   0.471014   0.473614  0.731344  ...  0.662775  0.784144  0.568807  0.475730  0.594121  0.644585  0.475608
+17  0.720368  0.666115  0.595373   0.475063   0.470738   0.473573  0.730390  ...  0.662625  0.783084  0.568393  0.475551  0.593868  0.644321  0.475435
+18  0.717953  0.664018  0.595089   0.474450   0.470588   0.472459  0.729286  ...  0.660083  0.781319  0.568136  0.475130  0.593095  0.642989  0.474988
+19  0.717547  0.663596  0.594124   0.474123   0.470480   0.472362  0.727445  ...  0.660020  0.779274  0.568059  0.474810  0.592563  0.642466  0.474638
+20  0.716342  0.663056  0.594109   0.472486   0.470356   0.471442  0.725915  ...  0.659825  0.777560  0.566933  0.472900  0.592069  0.641743  0.472773
+21  0.714091  0.661771  0.593614   0.470556   0.468230   0.469311  0.725787  ...  0.658008  0.776848  0.566576  0.471065  0.591671  0.641582  0.470930
+22  0.713084  0.661235  0.593383   0.470114   0.467217   0.468526  0.725558  ...  0.657398  0.776786  0.566524  0.470866  0.591592  0.641200  0.470706
+23  0.712821  0.661183  0.593295   0.470111   0.467162   0.468315  0.724846  ...  0.657205  0.775834  0.566424  0.470803  0.591370  0.641159  0.470609
+24  0.712070  0.660993  0.593173   0.469624   0.467113   0.468054  0.724623  ...  0.657092  0.775569  0.566147  0.470233  0.591260  0.639725  0.470043
+[25 rows x 108 columns]
+Traceback (most recent call last):
+  File "/home/aghktb/JOYS_Project/mintomics/Inference.py", line 234, in <module>
+    train_mintomics_classifier()
+  File "/home/aghktb/JOYS_Project/mintomics/Inference.py", line 231, in train_mintomics_classifier
+    trainer.test(model, dataloaders=test_loader, ckpt_path=pest_checkpoint)
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/trainer/trainer.py", line 780, in test
+    return call._call_and_handle_interrupt(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/trainer/call.py", line 38, in _call_and_handle_interrupt
+    return trainer_fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/trainer/trainer.py", line 829, in _test_impl
+    results = self._run(model, ckpt_path=self.ckpt_path)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/trainer/trainer.py", line 1098, in _run
+    results = self._run_stage()
+              ^^^^^^^^^^^^^^^^^
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/trainer/trainer.py", line 1174, in _run_stage
+    return self._run_evaluate()
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/trainer/trainer.py", line 1214, in _run_evaluate
+    eval_loop_results = self._evaluation_loop.run()
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/loops/loop.py", line 206, in run
+    output = self.on_run_end()
+             ^^^^^^^^^^^^^^^^^
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/loops/dataloader/evaluation_loop.py", line 180, in on_run_end
+    self._evaluation_epoch_end(self._outputs)
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/loops/dataloader/evaluation_loop.py", line 288, in _evaluation_epoch_end
+    self.trainer._call_lightning_module_hook(hook_name, output_or_outputs)
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/trainer/trainer.py", line 1342, in _call_lightning_module_hook
+    output = fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^
+  File "/home/aghktb/JOYS_Project/mintomics/Inference.py", line 183, in test_epoch_end
+    print(top_names_att_df)
+          ^^^^^^^^^^^^^^^^
+NameError: name 'top_names_att_df' is not defined

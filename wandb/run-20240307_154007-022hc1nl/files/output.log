@@ -1,0 +1,121 @@
+Restoring states from the checkpoint path at /home/aghktb/JOYS_PROJECT/mintomics/Trainings/Mintomics_classify_till_1_5days_1emblay_single_lay_laynorm/mintomics_epoch=02_valid_loss=0.011209.ckpt
+Loaded model weights from checkpoint at /home/aghktb/JOYS_PROJECT/mintomics/Trainings/Mintomics_classify_till_1_5days_1emblay_single_lay_laynorm/mintomics_epoch=02_valid_loss=0.011209.ckpt
+/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/trainer/connectors/data_connector.py:224: PossibleUserWarning: The dataloader, test_dataloader 0, does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` (try 80 which is the number of cpus on this machine) in the `DataLoader` init to improve performance.
+  rank_zero_warn(
+Testing DataLoader 0:   0%|                                                                                                           | 0/1 [00:00<?, ?it/s]torch.Size([1, 2406]) torch.Size([1, 2406])
+Testing DataLoader 0: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  1.81it/s]          Unnamed: 0  IU_2.5preg_n1  IU_2.5preg_n2  IU_2.5preg_n3  IA_2.5preg_n1  IA_2.5preg_n2  IA_2.5preg_n3
+0               Xkr4       1.139365       1.381432       0.884084       0.428088       0.544300       0.532467
+1            Gm19938       0.000000       0.016648       0.113826       0.062999       0.000000       0.000000
+2                Rp1       2.050768       1.913082       2.372558       4.817127       4.925382       4.954973
+3              Sox17       7.204096       7.076327       7.302768       5.502545       5.579611       5.426232
+4             Mrpl15       3.866865       3.846703       3.912610       3.852092       3.857649       3.860580
+...              ...            ...            ...            ...            ...            ...            ...
+21185  G530011O06Rik       1.896770       1.412476       2.041767       2.147589       1.440409       1.536936
+21186           Asmt       0.000000       0.083149       0.000000       0.104875       0.138588       0.128413
+21187          Ddx3y       0.000000       0.016648       0.000000       0.000000       0.015447       0.000000
+21188     Gapdh-ps15       0.635023       0.311280       0.523331       0.290103       0.348224       0.390598
+21189         Erdr1x       2.429426       2.371682       4.080882       4.435093       1.676475       2.992597
+[21190 rows x 7 columns]
+  Unnamed: 0  IU_2.5preg_n1  IU_2.5preg_n2  IU_2.5preg_n3  IA_2.5preg_n1  IA_2.5preg_n2  IA_2.5preg_n3
+0       Xkr4       1.139365       1.381432       0.884084       0.428088       0.544300       0.532467
+1    Gm19938       0.000000       0.016648       0.113826       0.062999       0.000000       0.000000
+2        Rp1       2.050768       1.913082       2.372558       4.817127       4.925382       4.954973
+3      Sox17       7.204096       7.076327       7.302768       5.502545       5.579611       5.426232
+4     Mrpl15       3.866865       3.846703       3.912610       3.852092       3.857649       3.860580
+2406
+108
+torch.Size([1922, 108])
+torch.Size([25, 108])
+108
+      Ywhae    Ywhaz      Pgd    Serpina1a    Serpina1b    Serpina1d    Actg1  ...     Tpi1      Ltf    Ttc38          Ttr     Usp5       Vcl           Gc
+0     Foxj1    Foxj1    Foxj1    Serpina1e    Serpina1e    Serpina1e    Foxj1  ...    Foxj1    Foxj1    Foxj1    Serpina1e    Foxj1     Foxj1    Serpina1e
+1     Nudt4    Nudt4    Nudt4        Naip5        Naip5        Naip5    Nudt4  ...    Nudt4    Nudt4    Nudt4        Naip5    Nudt4     Nudt4        Naip5
+2    Cfap65   Cfap65   Cfap65        Enpp3        Enpp3        Enpp3   Cfap65  ...   Cfap65   Cfap65   Cfap65        Enpp3   Cfap65    Cfap65        Enpp3
+3     Bcas1    Bcas1    Bcas1      Unc93a2      Unc93a2      Unc93a2    Bcas1  ...    Bcas1    Bcas1    Bcas1      Unc93a2    Bcas1     Bcas1      Unc93a2
+4     Ptpru    Ptpru    Ptpru        Cspg4        Tex21        Tex21    Ptpru  ...    Ptpru    Ptpru    Ptpru        Cspg4    Ptpru     Ptpru        Cspg4
+5    Cfap57   Cfap57   Cfap57        Tex21        Cspg4        Cspg4   Cfap57  ...   Cfap57   Cfap57   Cfap57        Tex21   Cfap57    Cfap57        Tex21
+6     Tcte1    Tcte1    Tcte1      Klk1b24      Klk1b24      Klk1b24    Tcte1  ...    Tcte1    Tcte1    Tcte1      Klk1b24    Tcte1     Tcte1      Klk1b24
+7   Ldlrad1   Vpreb3   Vpreb3  D13Ertd608e  D13Ertd608e  D13Ertd608e   Vpreb3  ...  Ldlrad1   Vpreb3    Rn45s  D13Ertd608e   Vpreb3    Vpreb3  D13Ertd608e
+8    Vpreb3  Ldlrad1  Ldlrad1        Rgs16        Rgs16        Rgs16  Ldlrad1  ...   Vpreb3  Ldlrad1   Spint2        Rgs16  Ldlrad1   Ldlrad1        Rgs16
+9     Rn45s    Saxo2    Saxo2         Sgcg        Tmco2         Sgcg    Saxo2  ...    Saxo2    Saxo2  Ldlrad1         Sgcg    Saxo2     Saxo2         Sgcg
+10    Saxo2  Cfap126  Cfap126        Tmco2         Sgcg        Tmco2  Cfap126  ...  Cfap126  Cfap126   Vpreb3        Tmco2  Cfap126   Cfap126       Chst10
+11  Cfap126    Rn45s   Osbpl3     Adamts14     Adamts14     Adamts14    Rn45s  ...    Rn45s    Rn45s  Cfap126     Adamts14    Rn45s   Rptoros     Adamts14
+12   Spint2   Spint2  Marchf4       Chst10        Gria2        Gria2   Osbpl3  ...   Spint2   Spint2    Saxo2       Chst10   Spint2    Osbpl3        Tmco2
+13   Osbpl3   Osbpl3    Rn45s        Gria2        Kcnt2        Kcnt2   Spint2  ...   Osbpl3   Osbpl3   Osbpl3      Klk1b21   Osbpl3   Marchf4      Klk1b21
+14  Marchf4  Marchf4   Spint2        Kcnt2       Adcy10      Klk1b21  Marchf4  ...  Marchf4  Marchf4  Marchf4        Gria2  Marchf4    Stoml3         Qpct
+15  Rptoros  Rptoros  Rptoros      Klk1b21        Nxpe2        Nxpe2  Rptoros  ...  Rptoros  Rptoros  Hsp90b1        Kcnt2  Rptoros    Spint2        Kcnt2
+16   Stoml3   Stoml3   Stoml3         Qpct         Dsg4         Qpct   Stoml3  ...   Stoml3   Stoml3      Fn1         Qpct   Stoml3     Rn45s        Gria2
+17  Hsp90b1   Cfap52   Cfap52        Nxpe2      Klk1b21       Adcy10   Cfap52  ...   Cfap52   Cfap52    Syne1        Nxpe2   Cfap52   Cfap100        Tmod2
+18    Syne1    Syne1  Cfap100       Adcy10        S1pr4         Dsg4  Cfap100  ...  Hsp90b1  Cfap100  Rptoros        Tmod2  Cfap100    Cfap52        Nxpe2
+19   Cfap52  Cfap100    Syne1        Tmod2         Qpct    Slfn10-ps    Syne1  ...    Syne1    Syne1   Stoml3       Adcy10    Syne1     Syne1        Tnnt2
+20      Fn1  Hsp90b1  Hsp90b1    Slfn10-ps    Slfn10-ps        S1pr4  Hsp90b1  ...  Cfap100  Hsp90b1  Mid1ip1    Slfn10-ps  Hsp90b1     Inhbb    Slfn10-ps
+21  Cfap100      Fn1  Zc2hc1a        S1pr4        Ajap1       Chst10  Zc2hc1a  ...      Fn1  Zc2hc1a   Cfap52        S1pr4      Fn1     Ttc16       Adcy10
+22  Mid1ip1  Zc2hc1a    Inhbb         Dsg4       Apol7e        Ajap1      Fn1  ...  Mid1ip1      Fn1  Cfap100        Tnnt2  Zc2hc1a   Zc2hc1a        S1pr4
+23  Zc2hc1a  Mid1ip1    Ttc16        Ajap1        Prkcq        Prkcq  Mid1ip1  ...  Zc2hc1a  Mid1ip1   Igfbp5         Dsg4  Mid1ip1      Rfx3        Ajap1
+24     Rfx3     Rfx3     Rfx3        Prkcq         Rbp4        Tmod2    Inhbb  ...     Rfx3    Inhbb  Zc2hc1a        Ajap1    Inhbb  Tsnaxip1        Smoc1
+[25 rows x 108 columns]
+       Ywhae     Ywhaz       Pgd  Serpina1a  Serpina1b  Serpina1d     Actg1  ...      Tpi1       Ltf     Ttc38       Ttr      Usp5       Vcl        Gc
+0   0.787808  0.716126  0.624888   0.519779   0.502939   0.511485  0.803899  ...  0.711026  0.875758  0.589210  0.522037  0.622266  0.672696  0.520783
+1   0.783119  0.712565  0.622779   0.502257   0.490756   0.496575  0.798560  ...  0.707607  0.868980  0.587925  0.503866  0.620278  0.669501  0.502964
+2   0.777614  0.709063  0.621161   0.495508   0.483837   0.489628  0.793905  ...  0.703951  0.862989  0.586063  0.497370  0.618448  0.668240  0.497418
+3   0.749445  0.689654  0.611033   0.482293   0.476463   0.479352  0.766911  ...  0.684640  0.828402  0.576746  0.483274  0.607898  0.656217  0.483036
+4   0.745625  0.685882  0.608178   0.479868   0.475758   0.477546  0.760637  ...  0.681283  0.820711  0.576148  0.480680  0.605578  0.650667  0.480478
+5   0.742592  0.683737  0.607008   0.479332   0.475165   0.477479  0.757631  ...  0.679186  0.816866  0.575118  0.479938  0.604383  0.649154  0.479233
+6   0.742074  0.683421  0.606880   0.477396   0.474291   0.475834  0.757247  ...  0.678845  0.816379  0.574924  0.477916  0.604222  0.649113  0.477311
+7   0.736813  0.679958  0.605207   0.475424   0.473200   0.474306  0.752676  ...  0.675305  0.810528  0.574551  0.475849  0.602360  0.647631  0.474915
+8   0.736774  0.679955  0.605167   0.474050   0.470887   0.472416  0.752622  ...  0.675291  0.810455  0.573538  0.474667  0.602338  0.647498  0.474591
+9   0.736383  0.678493  0.604080   0.472506   0.470287   0.471123  0.750239  ...  0.673989  0.807548  0.573045  0.473006  0.601444  0.645443  0.473095
+10  0.735304  0.677688  0.603279   0.471879   0.469864   0.471047  0.748670  ...  0.673361  0.805662  0.573019  0.472240  0.600892  0.643577  0.472494
+11  0.734812  0.676891  0.601625   0.471697   0.469286   0.470433  0.745760  ...  0.673295  0.802408  0.572899  0.472179  0.600019  0.642842  0.472102
+12  0.733957  0.675540  0.601434   0.469875   0.468286   0.468911  0.744451  ...  0.671812  0.800370  0.572784  0.471304  0.599345  0.641549  0.471620
+13  0.730470  0.674619  0.601375   0.469659   0.467715   0.468566  0.744213  ...  0.670324  0.800323  0.571411  0.470171  0.599178  0.641443  0.470504
+14  0.729628  0.674112  0.600909   0.469573   0.466970   0.467812  0.743861  ...  0.669811  0.799541  0.571037  0.470023  0.598918  0.639849  0.470249
+15  0.724710  0.671658  0.600845   0.469455   0.466790   0.467609  0.741384  ...  0.666931  0.796212  0.569932  0.470006  0.597752  0.637701  0.469800
+16  0.723292  0.670020  0.599475   0.469046   0.466557   0.467416  0.738527  ...  0.665588  0.792710  0.569128  0.469763  0.596706  0.637567  0.469780
+17  0.721905  0.667036  0.597221   0.468584   0.466408   0.467318  0.733671  ...  0.662900  0.786795  0.569034  0.469002  0.594845  0.635731  0.469438
+18  0.720956  0.666586  0.597005   0.467809   0.466039   0.466668  0.732985  ...  0.662834  0.785932  0.568829  0.468700  0.594544  0.635611  0.468861
+19  0.720217  0.666447  0.596195   0.467690   0.466034   0.466664  0.732094  ...  0.662767  0.785068  0.568683  0.468121  0.594372  0.632582  0.468242
+20  0.719655  0.666107  0.595082   0.467563   0.465947   0.466510  0.730380  ...  0.662213  0.783074  0.568129  0.467996  0.593860  0.632288  0.468040
+21  0.719171  0.664604  0.594922   0.467144   0.465601   0.466496  0.728646  ...  0.661272  0.780631  0.568124  0.467478  0.593016  0.631860  0.467768
+22  0.717539  0.663905  0.594691   0.466907   0.464898   0.465989  0.728384  ...  0.660075  0.780564  0.567733  0.467179  0.592918  0.631370  0.467458
+23  0.716862  0.663588  0.594321   0.466555   0.464857   0.465536  0.727437  ...  0.660072  0.779265  0.567457  0.467154  0.592556  0.630911  0.466999
+24  0.714826  0.662598  0.594304   0.466418   0.464482   0.465286  0.727434  ...  0.658713  0.778953  0.567433  0.466859  0.592294  0.630787  0.466926
+[25 rows x 108 columns]
+      Ywhae    Ywhaz      Pgd    Serpina1a    Serpina1b    Serpina1d    Actg1  ...      Tpi1       Ltf     Ttc38       Ttr      Usp5       Vcl        Gc
+0     Foxj1    Foxj1    Foxj1    Serpina1e    Serpina1e    Serpina1e    Foxj1  ...  0.711026  0.875758  0.589210  0.522037  0.622266  0.672696  0.520783
+1     Nudt4    Nudt4    Nudt4        Naip5        Naip5        Naip5    Nudt4  ...  0.707607  0.868980  0.587925  0.503866  0.620278  0.669501  0.502964
+2    Cfap65   Cfap65   Cfap65        Enpp3        Enpp3        Enpp3   Cfap65  ...  0.703951  0.862989  0.586063  0.497370  0.618448  0.668240  0.497418
+3     Bcas1    Bcas1    Bcas1      Unc93a2      Unc93a2      Unc93a2    Bcas1  ...  0.684640  0.828402  0.576746  0.483274  0.607898  0.656217  0.483036
+4     Ptpru    Ptpru    Ptpru        Cspg4        Tex21        Tex21    Ptpru  ...  0.681283  0.820711  0.576148  0.480680  0.605578  0.650667  0.480478
+5    Cfap57   Cfap57   Cfap57        Tex21        Cspg4        Cspg4   Cfap57  ...  0.679186  0.816866  0.575118  0.479938  0.604383  0.649154  0.479233
+6     Tcte1    Tcte1    Tcte1      Klk1b24      Klk1b24      Klk1b24    Tcte1  ...  0.678845  0.816379  0.574924  0.477916  0.604222  0.649113  0.477311
+7   Ldlrad1   Vpreb3   Vpreb3  D13Ertd608e  D13Ertd608e  D13Ertd608e   Vpreb3  ...  0.675305  0.810528  0.574551  0.475849  0.602360  0.647631  0.474915
+8    Vpreb3  Ldlrad1  Ldlrad1        Rgs16        Rgs16        Rgs16  Ldlrad1  ...  0.675291  0.810455  0.573538  0.474667  0.602338  0.647498  0.474591
+9     Rn45s    Saxo2    Saxo2         Sgcg        Tmco2         Sgcg    Saxo2  ...  0.673989  0.807548  0.573045  0.473006  0.601444  0.645443  0.473095
+10    Saxo2  Cfap126  Cfap126        Tmco2         Sgcg        Tmco2  Cfap126  ...  0.673361  0.805662  0.573019  0.472240  0.600892  0.643577  0.472494
+11  Cfap126    Rn45s   Osbpl3     Adamts14     Adamts14     Adamts14    Rn45s  ...  0.673295  0.802408  0.572899  0.472179  0.600019  0.642842  0.472102
+12   Spint2   Spint2  Marchf4       Chst10        Gria2        Gria2   Osbpl3  ...  0.671812  0.800370  0.572784  0.471304  0.599345  0.641549  0.471620
+13   Osbpl3   Osbpl3    Rn45s        Gria2        Kcnt2        Kcnt2   Spint2  ...  0.670324  0.800323  0.571411  0.470171  0.599178  0.641443  0.470504
+14  Marchf4  Marchf4   Spint2        Kcnt2       Adcy10      Klk1b21  Marchf4  ...  0.669811  0.799541  0.571037  0.470023  0.598918  0.639849  0.470249
+15  Rptoros  Rptoros  Rptoros      Klk1b21        Nxpe2        Nxpe2  Rptoros  ...  0.666931  0.796212  0.569932  0.470006  0.597752  0.637701  0.469800
+16   Stoml3   Stoml3   Stoml3         Qpct         Dsg4         Qpct   Stoml3  ...  0.665588  0.792710  0.569128  0.469763  0.596706  0.637567  0.469780
+17  Hsp90b1   Cfap52   Cfap52        Nxpe2      Klk1b21       Adcy10   Cfap52  ...  0.662900  0.786795  0.569034  0.469002  0.594845  0.635731  0.469438
+18    Syne1    Syne1  Cfap100       Adcy10        S1pr4         Dsg4  Cfap100  ...  0.662834  0.785932  0.568829  0.468700  0.594544  0.635611  0.468861
+19   Cfap52  Cfap100    Syne1        Tmod2         Qpct    Slfn10-ps    Syne1  ...  0.662767  0.785068  0.568683  0.468121  0.594372  0.632582  0.468242
+20      Fn1  Hsp90b1  Hsp90b1    Slfn10-ps    Slfn10-ps        S1pr4  Hsp90b1  ...  0.662213  0.783074  0.568129  0.467996  0.593860  0.632288  0.468040
+21  Cfap100      Fn1  Zc2hc1a        S1pr4        Ajap1       Chst10  Zc2hc1a  ...  0.661272  0.780631  0.568124  0.467478  0.593016  0.631860  0.467768
+22  Mid1ip1  Zc2hc1a    Inhbb         Dsg4       Apol7e        Ajap1      Fn1  ...  0.660075  0.780564  0.567733  0.467179  0.592918  0.631370  0.467458
+23  Zc2hc1a  Mid1ip1    Ttc16        Ajap1        Prkcq        Prkcq  Mid1ip1  ...  0.660072  0.779265  0.567457  0.467154  0.592556  0.630911  0.466999
+24     Rfx3     Rfx3     Rfx3        Prkcq         Rbp4        Tmod2    Inhbb  ...  0.658713  0.778953  0.567433  0.466859  0.592294  0.630787  0.466926
+[25 rows x 216 columns]
+Testing DataLoader 0: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:01<00:00,  1.71s/it]
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃[1m   Runningstage.testing    [22m┃[1m                           [22m┃
+┃[1m          metric           [22m┃[1m       DataLoader 0        [22m┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│[36m    test_BinaryAccuracy    [39m│[35m    0.9833748936653137     [39m│
+│[36m    test_BinaryF1Score     [39m│[35m    0.7777777910232544     [39m│
+│[36m   test_BinaryPrecision    [39m│[35m    0.9722222089767456     [39m│
+│[36m     test_BinaryRecall     [39m│[35m    0.6481481194496155     [39m│
+│[36m      test_loss_epoch      [39m│[35m    0.1422165185213089     [39m│
+└───────────────────────────┴───────────────────────────┘

@@ -1,0 +1,1 @@
+{"test_loss_step": 0.017094239592552185, "trainer/global_step": 0, "_timestamp": 1709847361.709122, "_runtime": 10.0936119556427, "_step": 1, "test_BinaryAccuracy": 0.9887780547142029, "test_BinaryPrecision": 0.75, "test_BinaryRecall": 0.8571428656578064, "test_BinaryF1Score": 0.800000011920929, "test_loss_epoch": 0.017094239592552185, "epoch": 2, "_wandb": {"runtime": 9}}

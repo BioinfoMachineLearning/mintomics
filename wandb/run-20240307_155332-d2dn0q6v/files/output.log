@@ -1,0 +1,66 @@
+Testing DataLoader 0:   0%|                                                                                                           | 0/1 [00:00<?, ?it/s]torch.Size([1, 2406]) torch.Size([1, 2406])
+Testing DataLoader 0: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  1.82it/s]          Unnamed: 0  IU_2.5preg_n1  IU_2.5preg_n2  IU_2.5preg_n3  IA_2.5preg_n1  IA_2.5preg_n2  IA_2.5preg_n3
+0               Xkr4       1.139365       1.381432       0.884084       0.428088       0.544300       0.532467
+1            Gm19938       0.000000       0.016648       0.113826       0.062999       0.000000       0.000000
+2                Rp1       2.050768       1.913082       2.372558       4.817127       4.925382       4.954973
+3              Sox17       7.204096       7.076327       7.302768       5.502545       5.579611       5.426232
+4             Mrpl15       3.866865       3.846703       3.912610       3.852092       3.857649       3.860580
+...              ...            ...            ...            ...            ...            ...            ...
+21185  G530011O06Rik       1.896770       1.412476       2.041767       2.147589       1.440409       1.536936
+21186           Asmt       0.000000       0.083149       0.000000       0.104875       0.138588       0.128413
+21187          Ddx3y       0.000000       0.016648       0.000000       0.000000       0.015447       0.000000
+21188     Gapdh-ps15       0.635023       0.311280       0.523331       0.290103       0.348224       0.390598
+21189         Erdr1x       2.429426       2.371682       4.080882       4.435093       1.676475       2.992597
+[21190 rows x 7 columns]
+  Unnamed: 0  IU_2.5preg_n1  IU_2.5preg_n2  IU_2.5preg_n3  IA_2.5preg_n1  IA_2.5preg_n2  IA_2.5preg_n3
+0       Xkr4       1.139365       1.381432       0.884084       0.428088       0.544300       0.532467
+1    Gm19938       0.000000       0.016648       0.113826       0.062999       0.000000       0.000000
+2        Rp1       2.050768       1.913082       2.372558       4.817127       4.925382       4.954973
+3      Sox17       7.204096       7.076327       7.302768       5.502545       5.579611       5.426232
+4     Mrpl15       3.866865       3.846703       3.912610       3.852092       3.857649       3.860580
+2406
+torch.Size([1922, 2406])
+torch.Size([25])
+Restoring states from the checkpoint path at /home/aghktb/JOYS_PROJECT/mintomics/Trainings/Mintomics_classify_till_1_5days_1emblay_single_lay_laynorm/mintomics_epoch=02_valid_loss=0.011209.ckpt
+Loaded model weights from checkpoint at /home/aghktb/JOYS_PROJECT/mintomics/Trainings/Mintomics_classify_till_1_5days_1emblay_single_lay_laynorm/mintomics_epoch=02_valid_loss=0.011209.ckpt
+/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/trainer/connectors/data_connector.py:224: PossibleUserWarning: The dataloader, test_dataloader 0, does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` (try 80 which is the number of cpus on this machine) in the `DataLoader` init to improve performance.
+  rank_zero_warn(
+Traceback (most recent call last):
+  File "/home/aghktb/JOYS_Project/mintomics/Inference.py", line 235, in <module>
+    if __name__ == "__main__":
+        ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/aghktb/JOYS_Project/mintomics/Inference.py", line 232, in train_mintomics_classifier
+    pest_checkpoint = DATASET_DIR+"/Trainings/"+args.save_dir+"/"+args.chkpt
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/trainer/trainer.py", line 780, in test
+    return call._call_and_handle_interrupt(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/trainer/call.py", line 38, in _call_and_handle_interrupt
+    return trainer_fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/trainer/trainer.py", line 829, in _test_impl
+    results = self._run(model, ckpt_path=self.ckpt_path)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/trainer/trainer.py", line 1098, in _run
+    results = self._run_stage()
+              ^^^^^^^^^^^^^^^^^
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/trainer/trainer.py", line 1174, in _run_stage
+    return self._run_evaluate()
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/trainer/trainer.py", line 1214, in _run_evaluate
+    eval_loop_results = self._evaluation_loop.run()
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/loops/loop.py", line 206, in run
+    output = self.on_run_end()
+             ^^^^^^^^^^^^^^^^^
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/loops/dataloader/evaluation_loop.py", line 180, in on_run_end
+    self._evaluation_epoch_end(self._outputs)
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/loops/dataloader/evaluation_loop.py", line 288, in _evaluation_epoch_end
+    self.trainer._call_lightning_module_hook(hook_name, output_or_outputs)
+  File "/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/trainer/trainer.py", line 1342, in _call_lightning_module_hook
+    output = fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^
+  File "/home/aghktb/JOYS_Project/mintomics/Inference.py", line 173, in test_epoch_end
+    ##attention4 = attention3[top_tf_indices,torch.arange(attention3.shape[1])]*10000
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+IndexError: shape mismatch: indexing tensors could not be broadcast together with shapes [25], [2406]

@@ -223,6 +223,7 @@ def gene2protein(stage = 'train', size = 10, pertage = 0.5):
         else:
             for i in range(n):
                 # random mask any gene IDs, and find out the gene indeces in the mapping pool
+                print(int(len(Gene_2_num) * pertage))
                 gene_mask = np.random.choice(list(map_2_num.keys()), replace=False, size=int(len(Gene_2_num) * pertage))
                 Gene_dat[gene_mask] = 0.0
                 Gene_dat = torch.tensor(Gene_dat, dtype=torch.float32)

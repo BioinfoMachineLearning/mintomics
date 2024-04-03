@@ -24,17 +24,18 @@ from torchmetrics.regression import MeanSquaredError,R2Score,MeanAbsoluteError
 from Model import TransformerMintomics
 from argparse import ArgumentParser
 import scipy.signal as signal
-from PrepareDataset import Psedu_data , Data2target,gene2protein
-from prepare_test_data import Data2target_test
+from Diff_dataset import Psedu_data , Data2target,gene2protein
+from Diff_dataset_test import Data2target_test
+
 
 AVAIL_GPUS = [1,2]
 NUM_NODES = 1
 BATCH_SIZE = 1
 DATALOADERS = 1
 ACCELERATOR = "gpu"
-EPOCHS = 4
+EPOCHS = 1
 ATT_HEAD = 1
-ENCODE_LAYERS = 2
+ENCODE_LAYERS = 1
 DATASET_DIR = "/home/aghktb/JOYS_PROJECT/mintomics"
 
 #label_dict = read_csv(DATASET_DIR+"/Dataset/Labels_proc/Labels_control.csv",index_col=0)
@@ -65,10 +66,10 @@ class Mintomics(pl.LightningModule):
         self.model = TransformerMintomics(attn_head=attn_head,encoder_layers=encoder_layers,n_class=n_class,**model_kwargs)
         self.loss_fn = nn.BCEWithLogitsLoss()
        
-        self.metrics_class = MetricCollection([MultilabelAccuracy(num_labels=400,average='micro'),
-                                              MultilabelPrecision(num_labels=400,average='micro'),
-                                              MultilabelF1Score(num_labels=400,average='micro'),
-                                              MultilabelRecall(num_labels=400,average='micro')])
+        self.metrics_class = MetricCollection([MultilabelAccuracy(num_labels=76,average='micro'),
+                                              MultilabelPrecision(num_labels=76,average='micro'),
+                                              MultilabelF1Score(num_labels=76,average='micro'),
+                                              MultilabelRecall(num_labels=76,average='micro')])
         #self.metrics_class = MetricCollection([BinaryAccuracy(),
         #                                 BinaryPrecision(),
         #                                 BinaryRecall(),
@@ -182,17 +183,17 @@ class Mintomics(pl.LightningModule):
             #torch.save(dataset_outputs,"Predictions.pt")
             class_preds = torch.cat([x[f'preds_class'] for x in dataset_outputs])
             class_targets = torch.cat([x[f'targets_class'] for x in dataset_outputs])
-            conf_mat = BinaryConfusionMatrix()
+            conf_mat = BinaryConfusionMatrix().cuda()
             conf_vals = conf_mat(class_preds, class_targets)
             fig = sns.heatmap(conf_vals.cpu() , annot=True, cmap="Blues", fmt="d")
-            ind = torch.nonzero(class_targets[0,:]>0.8)
+            ind = torch.nonzero(class_targets[0,:]>0.5)
             attention = torch.cat([x[f'attention'] for x in dataset_outputs]).squeeze()
             inf = torch.cat([x[f'inf'] for x in dataset_outputs]).squeeze()
             attention1 = attention[:,inf[0,:]]
             attention2 = attention1[:,ind].squeeze()
             print(inf.shape, attention2.shape)
             # Get top 100 genes along rows for all columns
-            top_genes_values, top_genes_indices = torch.topk(attention2, k=1000, dim=0)
+            top_genes_values, top_genes_indices = torch.topk(attention2, k=20, dim=0)
             mask = torch.zeros_like(attention2)
             
             mask[top_genes_indices, torch.arange(attention2.shape[1])] = 1.0
@@ -279,9 +280,9 @@ def train_mintomics_classifier():
     os.makedirs(save_PATH, exist_ok=True)
 
     # load data and get corresponding information
-    dataset_train = Data2target(stage='train', size = 500, pertage = 0.15)  #100 samples each dp
-    dataset_valid = Data2target(stage='valid', size = 200, pertage = 0.15) 
-    dataset_test = Data2target_test(stage='test',size=25,pertage=0.15)
+    dataset_train = Data2target(stage='train', size = 4000, pertage = 0.15)  #100 samples each dp
+    dataset_valid = Data2target(stage='valid', size = 1000, pertage = 0.15) 
+    dataset_test = Data2target_test(stage='test',size=2000,pertage=0.15)
     #train_size = int(0.7 * len(dataset))
     #val_size = int(0.1 * len(dataset))
     #test_size = len(dataset) - (train_size+val_size)

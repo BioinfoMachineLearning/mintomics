@@ -1,0 +1,120 @@
+Restoring states from the checkpoint path at /home/aghktb/JOYS_PROJECT/mintomics/Trainings/Mintomics_classify_till_1_5days_1emblay_single_lay_laynorm/mintomics_epoch=02_valid_loss=0.011209.ckpt
+Loaded model weights from checkpoint at /home/aghktb/JOYS_PROJECT/mintomics/Trainings/Mintomics_classify_till_1_5days_1emblay_single_lay_laynorm/mintomics_epoch=02_valid_loss=0.011209.ckpt
+/home/aghktb/miniconda3/envs/myenv/lib/python3.11/site-packages/lightning/pytorch/trainer/connectors/data_connector.py:224: PossibleUserWarning: The dataloader, test_dataloader 0, does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` (try 80 which is the number of cpus on this machine) in the `DataLoader` init to improve performance.
+  rank_zero_warn(
+Testing DataLoader 0:   0%|                                                                                                           | 0/1 [00:00<?, ?it/s]torch.Size([1, 2406]) torch.Size([1, 2406])
+Testing DataLoader 0: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  2.28it/s]          Unnamed: 0  IU_1.5preg_n1  IU_1.5preg_n2  IU_1.5preg_n3  IA_1.5preg_n1  IA_1.5preg_n2  IA_1.5preg_n3
+0               Xkr4       1.401714       1.243440       1.458018       1.125660       0.819482       0.643212
+1            Gm19938       0.115879       0.000000       0.000000       0.108647       0.050774       0.103091
+2                Rp1       2.389602       2.472726       2.385023       4.871062       4.984269       5.018142
+3              Sox17       6.739956       7.113864       6.989797       5.429485       5.465996       5.326711
+4             Mrpl15       3.922439       3.849112       3.936089       3.700028       3.798215       3.856214
+...              ...            ...            ...            ...            ...            ...            ...
+21185  G530011O06Rik       0.793428       0.870027       1.368642       0.613877       1.207940       1.193357
+21186           Asmt       0.082861       0.000000       0.107895       0.036279       0.101418       0.120196
+21187          Ddx3y       0.016590       0.018922       0.000000       0.000000       0.000000       0.017211
+21188     Gapdh-ps15       1.023098       0.352217       0.681194       0.144643       0.488322       0.272029
+21189         Erdr1x       3.037515       0.948703       1.924031       0.536359       1.400259       1.183760
+[21190 rows x 7 columns]
+  Unnamed: 0  IU_1.5preg_n1  IU_1.5preg_n2  IU_1.5preg_n3  IA_1.5preg_n1  IA_1.5preg_n2  IA_1.5preg_n3
+0       Xkr4       1.401714       1.243440       1.458018       1.125660       0.819482       0.643212
+1    Gm19938       0.115879       0.000000       0.000000       0.108647       0.050774       0.103091
+2        Rp1       2.389602       2.472726       2.385023       4.871062       4.984269       5.018142
+3      Sox17       6.739956       7.113864       6.989797       5.429485       5.465996       5.326711
+4     Mrpl15       3.922439       3.849112       3.936089       3.700028       3.798215       3.856214
+2406
+torch.Size([1922, 2406])
+torch.Size([25, 2406])
+2406
+       Ywhab     Ywhae     Ywhah     Ywhag       Sfn     Ywhaq     Ywhaz  ...      Tjp2        Zp2        Zp3       Zpbp  Serpina10      Zpr1       Zyx
+0     Cfap65    Cfap65    Cfap65    Cfap65  Hsp90ab1    Cfap65    Cfap65  ...    Cfap65        Ihh        Ihh        Ihh        Ihh    Cfap65    Cfap65
+1      Cdhr3     Cdhr3     Cdhr3     Cdhr3    Atp1a1     Cdhr3     Cdhr3  ...     Cdhr3      Hoxa9      Hoxa9      Hoxa9      Hoxa9     Cdhr3     Cdhr3
+2     Ccdc40    Ccdc40    Ccdc40    Ccdc40    Igfbp5    Ccdc40    Ccdc40  ...    Ccdc40    Slc6a14    Slc6a14    Slc6a14    Slc6a14    Ccdc40    Ccdc40
+3      Dnah1     Dnah1     Dnah1     Dnah1    Ctnnb1     Dnah1     Dnah1  ...     Dnah1    Gm11545    Gm11545     Crabp2    Gm11545     Dnah1     Dnah1
+4     Cfap54    Ctnnb1    Cfap54    Cfap54      Scd2    Ctnnb1    Ctnnb1  ...    Cfap54     Crabp2     Crabp2    Gm11545     Crabp2    Cfap54    Cfap54
+5     Crocc2    Cfap54    Crocc2    Crocc2    Tmbim6    Cfap54    Cfap54  ...    Crocc2      Il36b      Il36b      Il36b      Il36b    Crocc2    Crocc2
+6     Ctnnb1    Crocc2    Cep126    Ctnnb1      Psap    Crocc2    Crocc2  ...    Ctnnb1       Gjb1       Gjb1      Gsta2       Gjb1    Ctnnb1    Cep126
+7     Cep126    Cep126    Kcnmb2    Cep126       Clu    Cep126    Cep126  ...    Cep126      Gsta2      Gsta2       Gjb1      Gsta2    Cep126    Kcnmb2
+8      Dnai4       Clu     Dnai4     Dnai4     Calm3       Clu       Clu  ...       Clu  Serpina3n  Serpina3n     Sprr2f  Serpina3n     Dnai4     Dnai4
+9     Kcnmb2     Dnai4    Ctnnb1       Clu      Rpsa     Dnai4     Dnai4  ...     Dnai4      Myo1a      Myo1a  Serpina3n     Sprr2f       Clu    Ctnnb1
+10       Clu  Hsp90ab1   Fam149a   Fam149a   Dync1h1    Atp1a1  Hsp90ab1  ...   Fam149a     Sprr2f     Sprr2f      Myo1a      Myo1a   Fam149a   Fam149a
+11   Fam149a    Atp1a1     Saxo2    Kcnmb2    Atp5a1  Hsp90ab1    Atp1a1  ...     Calm3       Bves       Bves       Bves       Bves    Kcnmb2     Saxo2
+12     Calm3     Calm3    Fam13a     Calm3    Sptbn1     Calm3   Fam149a  ...    Atp1a1   Adamtsl2   Adamtsl2     Rbfox3   Adamtsl2     Calm3    Fam13a
+13     Saxo2   Fam149a   Cfap126    Atp1a1     Map1b   Fam149a     Calm3  ...  Hsp90ab1     Rbfox3     Rbfox3   Adamtsl2     Rbfox3    Atp1a1   Cfap126
+14  Hsp90ab1    Kcnmb2       Clu  Hsp90ab1      Flnb    Kcnmb2    Kcnmb2  ...    Kcnmb2    Fam124b    Fam124b    Fam124b    Fam124b  Hsp90ab1       Clu
+15    Atp1a1     Saxo2     Calm3     Saxo2    Ppp1cb     Saxo2     Saxo2  ...     Saxo2        Kcp        Kcp     Klk1b5        Kcp     Saxo2    Stoml3
+16   Cfap126   Cfap126    Stoml3   Cfap126      Mylk   Cfap126   Cfap126  ...   Cfap126     Klk1b5     Klk1b5        Kcp     Klk1b5   Cfap126     Calm3
+17    Fam13a      Pltp      Pltp    Fam13a     Anpep    Fam13a    Fam13a  ...    Fam13a       Car7       Car7     Twist2       Car7    Fam13a    Spag17
+18      Pltp    Fam13a    Spag17      Pltp    Cfap65      Pltp      Pltp  ...      Pltp     Twist2     Twist2    Rasgrp1     Twist2      Pltp      Pltp
+19    Spag17    Igfbp5    Atp1a1    Spag17      Dag1    Igfbp5    Igfbp5  ...    Igfbp5     Strip2     Strip2      Vsnl1     Strip2    Igfbp5    Atp1a1
+20    Stoml3    Tmbim6  Hsp90ab1    Tmbim6     Rpl41    Tmbim6    Tmbim6  ...    Tmbim6      Vsnl1      Vsnl1       Car7      Vsnl1    Spag17  Hsp90ab1
+21    Gprc5c    Gprc5c    Ccdc39    Igfbp5    Ctnna1    Gprc5c    Gprc5c  ...    Spag17    Rasgrp1    Rasgrp1     Strip2    Rasgrp1    Tmbim6     H2-Ob
+22    Igfbp5     Map1b     H2-Ob    Stoml3     Cnot1    Spag17    Spag17  ...    Gprc5c      Kcna1      Kcna1   Ceacam19      Kcna1    Gprc5c    Ccdc39
+23    Tmbim6    Spag17     Cdkl4    Gprc5c      Myo6     Map1b     Map1b  ...    Stoml3   Ceacam19   Ceacam19      Kcna1   Ceacam19    Stoml3     Cdkl4
+24     Ift88     Ift88     Ift88     Ift88    Ctnnd1     Ift88     Ift88  ...     Ift88      Mcpt4      Mcpt4      Crtam      Crtam     Ift88     Ift88
+[25 rows x 2406 columns]
+       Ywhab     Ywhae     Ywhah     Ywhag       Sfn     Ywhaq     Ywhaz  ...      Tjp2       Zp2       Zp3      Zpbp  Serpina10      Zpr1       Zyx
+0   0.686373  0.774118  0.529135  0.603356  0.501943  0.703255  0.710989  ...  0.702044  0.504007  0.502074  0.481672   0.502615  0.539701  0.638133
+1   0.675273  0.757097  0.527115  0.597333  0.501943  0.691132  0.698243  ...  0.689890  0.500648  0.499017  0.481647   0.499845  0.537069  0.630108
+2   0.673544  0.754967  0.526694  0.596454  0.501552  0.689585  0.696558  ...  0.688194  0.499161  0.497563  0.479949   0.497812  0.536676  0.628444
+3   0.667962  0.745337  0.525819  0.593123  0.501473  0.682571  0.689484  ...  0.681669  0.490968  0.489915  0.478065   0.489860  0.535250  0.625315
+4   0.666836  0.744945  0.525699  0.592474  0.501150  0.681634  0.688211  ...  0.680233  0.490036  0.489133  0.477517   0.489431  0.534945  0.624904
+5   0.666427  0.743112  0.525524  0.592187  0.501073  0.681044  0.687894  ...  0.679979  0.486166  0.485424  0.476447   0.485561  0.534886  0.624183
+6   0.663904  0.743010  0.524594  0.591334  0.500903  0.680776  0.687726  ...  0.679466  0.485544  0.484806  0.476011   0.484741  0.534562  0.620681
+7   0.661866  0.736356  0.524191  0.589742  0.500767  0.676031  0.682654  ...  0.675112  0.484982  0.484343  0.475783   0.484370  0.533749  0.619385
+8   0.659483  0.736159  0.524006  0.588418  0.500272  0.675088  0.681625  ...  0.673194  0.479304  0.478902  0.473120   0.478264  0.533187  0.618425
+9   0.658254  0.733392  0.523987  0.587965  0.499871  0.673762  0.680304  ...  0.672761  0.476460  0.476330  0.473077   0.476035  0.533156  0.617775
+10  0.658246  0.733205  0.523685  0.587749  0.499859  0.672873  0.679095  ...  0.671457  0.476381  0.476299  0.472605   0.475793  0.532879  0.617217
+11  0.658184  0.733205  0.523589  0.587642  0.499781  0.672873  0.679095  ...  0.670759  0.475129  0.475187  0.472195   0.474369  0.532749  0.617079
+12  0.656224  0.732502  0.523087  0.586944  0.499720  0.672677  0.679000  ...  0.670532  0.473309  0.473279  0.471033   0.472639  0.532597  0.615162
+13  0.656112  0.731744  0.523047  0.586536  0.499376  0.672560  0.678945  ...  0.670532  0.471378  0.471555  0.471013   0.471003  0.532474  0.614893
+14  0.655245  0.729208  0.522916  0.586536  0.499266  0.671108  0.677531  ...  0.670488  0.470896  0.471071  0.470664   0.470413  0.532474  0.613755
+15  0.655245  0.726929  0.522619  0.586437  0.499125  0.669252  0.675638  ...  0.668544  0.470201  0.470377  0.470166   0.469513  0.532250  0.613023
+16  0.654707  0.726235  0.522409  0.585820  0.498984  0.668647  0.674871  ...  0.667558  0.469725  0.469934  0.469868   0.469313  0.531977  0.612799
+17  0.654453  0.725481  0.522329  0.585566  0.498980  0.667946  0.674247  ...  0.667069  0.469480  0.469695  0.469442   0.468623  0.531878  0.612408
+18  0.652938  0.725294  0.522300  0.584871  0.498973  0.667744  0.673967  ...  0.666391  0.469296  0.469637  0.469415   0.468390  0.531630  0.612078
+19  0.650174  0.723249  0.522018  0.583001  0.498914  0.665456  0.671499  ...  0.663250  0.468574  0.468907  0.469384   0.467748  0.530760  0.610359
+20  0.649501  0.722496  0.522018  0.582645  0.498891  0.665116  0.671048  ...  0.662917  0.468127  0.468447  0.469323   0.467698  0.530755  0.610359
+21  0.648968  0.719814  0.521703  0.582624  0.498815  0.663458  0.669607  ...  0.662216  0.467915  0.468308  0.469280   0.467304  0.530709  0.610336
+22  0.648486  0.718639  0.521646  0.582556  0.498647  0.662831  0.669079  ...  0.662176  0.467082  0.467450  0.469128   0.466657  0.530630  0.610238
+23  0.648432  0.718392  0.521621  0.582556  0.498631  0.662365  0.668428  ...  0.660961  0.466901  0.467281  0.469006   0.466555  0.530491  0.609955
+24  0.648363  0.717398  0.521614  0.582185  0.498601  0.661984  0.668028  ...  0.660914  0.466494  0.466879  0.468898   0.466098  0.530385  0.609683
+[25 rows x 2406 columns]
+       Ywhab     Ywhae     Ywhah     Ywhag       Sfn     Ywhaq     Ywhaz  ...      Tjp2       Zp2       Zp3      Zpbp Serpina10      Zpr1       Zyx
+0     Cfap65    Cfap65    Cfap65    Cfap65  Hsp90ab1    Cfap65    Cfap65  ...  0.702044  0.504007  0.502074  0.481672  0.502615  0.539701  0.638133
+1      Cdhr3     Cdhr3     Cdhr3     Cdhr3    Atp1a1     Cdhr3     Cdhr3  ...  0.689890  0.500648  0.499017  0.481647  0.499845  0.537069  0.630108
+2     Ccdc40    Ccdc40    Ccdc40    Ccdc40    Igfbp5    Ccdc40    Ccdc40  ...  0.688194  0.499161  0.497563  0.479949  0.497812  0.536676  0.628444
+3      Dnah1     Dnah1     Dnah1     Dnah1    Ctnnb1     Dnah1     Dnah1  ...  0.681669  0.490968  0.489915  0.478065  0.489860  0.535250  0.625315
+4     Cfap54    Ctnnb1    Cfap54    Cfap54      Scd2    Ctnnb1    Ctnnb1  ...  0.680233  0.490036  0.489133  0.477517  0.489431  0.534945  0.624904
+5     Crocc2    Cfap54    Crocc2    Crocc2    Tmbim6    Cfap54    Cfap54  ...  0.679979  0.486166  0.485424  0.476447  0.485561  0.534886  0.624183
+6     Ctnnb1    Crocc2    Cep126    Ctnnb1      Psap    Crocc2    Crocc2  ...  0.679466  0.485544  0.484806  0.476011  0.484741  0.534562  0.620681
+7     Cep126    Cep126    Kcnmb2    Cep126       Clu    Cep126    Cep126  ...  0.675112  0.484982  0.484343  0.475783  0.484370  0.533749  0.619385
+8      Dnai4       Clu     Dnai4     Dnai4     Calm3       Clu       Clu  ...  0.673194  0.479304  0.478902  0.473120  0.478264  0.533187  0.618425
+9     Kcnmb2     Dnai4    Ctnnb1       Clu      Rpsa     Dnai4     Dnai4  ...  0.672761  0.476460  0.476330  0.473077  0.476035  0.533156  0.617775
+10       Clu  Hsp90ab1   Fam149a   Fam149a   Dync1h1    Atp1a1  Hsp90ab1  ...  0.671457  0.476381  0.476299  0.472605  0.475793  0.532879  0.617217
+11   Fam149a    Atp1a1     Saxo2    Kcnmb2    Atp5a1  Hsp90ab1    Atp1a1  ...  0.670759  0.475129  0.475187  0.472195  0.474369  0.532749  0.617079
+12     Calm3     Calm3    Fam13a     Calm3    Sptbn1     Calm3   Fam149a  ...  0.670532  0.473309  0.473279  0.471033  0.472639  0.532597  0.615162
+13     Saxo2   Fam149a   Cfap126    Atp1a1     Map1b   Fam149a     Calm3  ...  0.670532  0.471378  0.471555  0.471013  0.471003  0.532474  0.614893
+14  Hsp90ab1    Kcnmb2       Clu  Hsp90ab1      Flnb    Kcnmb2    Kcnmb2  ...  0.670488  0.470896  0.471071  0.470664  0.470413  0.532474  0.613755
+15    Atp1a1     Saxo2     Calm3     Saxo2    Ppp1cb     Saxo2     Saxo2  ...  0.668544  0.470201  0.470377  0.470166  0.469513  0.532250  0.613023
+16   Cfap126   Cfap126    Stoml3   Cfap126      Mylk   Cfap126   Cfap126  ...  0.667558  0.469725  0.469934  0.469868  0.469313  0.531977  0.612799
+17    Fam13a      Pltp      Pltp    Fam13a     Anpep    Fam13a    Fam13a  ...  0.667069  0.469480  0.469695  0.469442  0.468623  0.531878  0.612408
+18      Pltp    Fam13a    Spag17      Pltp    Cfap65      Pltp      Pltp  ...  0.666391  0.469296  0.469637  0.469415  0.468390  0.531630  0.612078
+19    Spag17    Igfbp5    Atp1a1    Spag17      Dag1    Igfbp5    Igfbp5  ...  0.663250  0.468574  0.468907  0.469384  0.467748  0.530760  0.610359
+20    Stoml3    Tmbim6  Hsp90ab1    Tmbim6     Rpl41    Tmbim6    Tmbim6  ...  0.662917  0.468127  0.468447  0.469323  0.467698  0.530755  0.610359
+21    Gprc5c    Gprc5c    Ccdc39    Igfbp5    Ctnna1    Gprc5c    Gprc5c  ...  0.662216  0.467915  0.468308  0.469280  0.467304  0.530709  0.610336
+22    Igfbp5     Map1b     H2-Ob    Stoml3     Cnot1    Spag17    Spag17  ...  0.662176  0.467082  0.467450  0.469128  0.466657  0.530630  0.610238
+23    Tmbim6    Spag17     Cdkl4    Gprc5c      Myo6     Map1b     Map1b  ...  0.660961  0.466901  0.467281  0.469006  0.466555  0.530491  0.609955
+24     Ift88     Ift88     Ift88     Ift88    Ctnnd1     Ift88     Ift88  ...  0.660914  0.466494  0.466879  0.468898  0.466098  0.530385  0.609683
+[25 rows x 4812 columns]
+Testing DataLoader 0: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:01<00:00,  1.71s/it]
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃[1m   Runningstage.testing    [22m┃[1m                           [22m┃
+┃[1m          metric           [22m┃[1m       DataLoader 0        [22m┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│[36m    test_BinaryAccuracy    [39m│[35m    0.9983375072479248     [39m│
+│[36m    test_BinaryF1Score     [39m│[35m    0.9729729890823364     [39m│
+│[36m   test_BinaryPrecision    [39m│[35m            1.0            [39m│
+│[36m     test_BinaryRecall     [39m│[35m    0.9473684430122375     [39m│
+│[36m      test_loss_epoch      [39m│[35m    0.00793230440467596    [39m│
+└───────────────────────────┴───────────────────────────┘

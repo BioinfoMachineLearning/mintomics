@@ -13,7 +13,7 @@ from lightning.pytorch.loggers import WandbLogger
 from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint, LearningRateMonitor
 import torch.nn as nn
 import numpy as np
-from pandas import read_csv
+from pandas import read_csv,DataFrame,concat
 from torch import  Tensor
 import torch.nn.functional as F
 import re
@@ -21,7 +21,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
-
+from torch_geometric.data import Data
 import wandb
 from torchmetrics import MetricCollection
 from torchmetrics.classification import BinaryAccuracy, BinaryRecall, BinaryPrecision, BinaryConfusionMatrix, BinaryF1Score,MulticlassAccuracy, MultilabelAccuracy, MultilabelF1Score, MultilabelConfusionMatrix,MultilabelPrecision,MultilabelRecall,MulticlassPrecision,MulticlassRecall,MulticlassF1Score,MulticlassConfusionMatrix
@@ -33,8 +33,8 @@ import scipy.signal as signal
 from PrepareDataset import Psedu_data , Data2target,gene2protein
 from prepare_test_data import Data2target_test
 from scipy.cluster import hierarchy
-import fastcluster
-
+from Diff_Gene_proc import selected_genes,significant_proteins,common_genes
+import itertools
 DATA_DIR = '/home/aghktb/JOYS_Project/mintomics'
 root = '/bmlfast/joy_RNA/Data/'
 dir_in = 'bulkRNA_p_'
@@ -83,7 +83,7 @@ class Mintomics(pl.LightningModule):
     def test_step(self,batch, batch_idx):
         batch_data = batch[0]
         inf = batch[2]
-        
+        tfs = batch_data[:,:,6]
         
         y_hat,attnt = self.forward(batch_data)
         batch_label_class = batch[3]
@@ -114,8 +114,30 @@ class Mintomics(pl.LightningModule):
         #conf_vals = conf_mat(class_pred, batch_label_class.squeeze())
         #print("Test Data Confusion Matrix: \n")
         #print(conf_vals)
-        return {f'preds_class' : class_pred, f'targets_class' :target,f'attention':attnt,f'inf':inf}
-        
+        return {f'preds_class' : class_pred, f'targets_class' :target,f'attention':attnt,f'inf':inf,f'tfs':tfs}
+    def construct_networkx(edge_weight_matrix):
+            """
+              Constructs a network from an edge weight matrix.
+
+              Args:
+                edge_weight_matrix: A square matrix of edge weights.
+
+              Returns:
+                A `torch_geometric.data.Data` object representing the network.
+            """
+
+            edge_index = (abs(edge_weight_matrix) > 0.5).nonzero().t()
+            row, col = edge_index
+            edge_weight = edge_weight_matrix[row, col]
+            #G = nx.Graph(np.matrix(edge_weight_matrix))
+
+
+            # Create a Data object to represent the graph.
+            data = Data(edge_index=edge_index, edge_weight=edge_weight)
+
+
+              # Return the data object.
+            return data  
     def test_epoch_end(self, outputs):
         # Log individual results for each dataset
         
@@ -123,6 +145,19 @@ class Mintomics(pl.LightningModule):
             dataset_outputs = outputs
             
             #torch.save(dataset_outputs,"Predictions.pt")
+            gene_names = read_csv("/home/aghktb/JOYS_Project/mintomics/Dataset/Data_cpm/Data_2_5preg.csv",)
+            
+            #print(gene_names)
+            gene_name = gene_names["Unnamed: 0"]
+            gene_name1 = gene_names["Unnamed: 0"].tolist()
+            print(gene_name.head())
+            #get differentially significant genes
+            sele_genes = list(set(selected_genes))
+            
+            diff_gene_ind = [gene_name1.index(gene) for gene in sele_genes]
+            #print(diff_gene_ind)
+
+            
             class_preds = torch.cat([x[f'preds_class'] for x in dataset_outputs])
             class_targets = torch.cat([x[f'targets_class'] for x in dataset_outputs])
             conf_mat = BinaryConfusionMatrix()
@@ -131,49 +166,86 @@ class Mintomics(pl.LightningModule):
             ind = torch.nonzero(class_targets[0,:]>0.8)
             attention = torch.cat([x[f'attention'] for x in dataset_outputs]).squeeze()
             inf = torch.cat([x[f'inf'] for x in dataset_outputs]).squeeze()
-            print(inf.shape)
+
+            Tfs =  torch.cat([x[f'tfs'] for x in dataset_outputs]).squeeze()
+            
+            tf_ind = np.nonzero(Tfs>0).numpy()
+            
+            #tf_names = gene_name.values[tf_ind].tolist()
+            diff_tf_ind = torch.tensor(tf_ind[np.isin(tf_ind, diff_gene_ind)]).T.numpy()
+            print((tf_ind),(diff_tf_ind))
+            #print(diff_tf_ind)
+            tf_names = list(itertools.chain.from_iterable(gene_name.values[tf_ind].tolist()))
+            diff_tf_names = list(itertools.chain.from_iterable(gene_name.values[diff_tf_ind].tolist()))
+            #print((tf_names))
+            print((tf_names),(diff_tf_names))
+            protein_gene_names = gene_name.values[inf[0]]
+            ###differential significan protein index
+            protein_diff_gene_name = [idx for idx in protein_gene_names if idx in common_genes]
+            protein_diff_gene_ind = [gene_name1.index(gene) for gene in common_genes]
+            print(len(protein_diff_gene_name))
+            print(len(ind),len(protein_diff_gene_ind))
+            diff_ind = [ind[np.isin(ind, protein_diff_gene_ind)]]
+            print(len(diff_ind))
+            high_proteins = list(itertools.chain.from_iterable(protein_gene_names[ind].tolist()))
+            #print(len(high_proteins))
+            #print(inf.shape)
+            
             attention1 = attention.fill_diagonal_(0)
+            
+
             attention1 = attention1[:,inf[0]]
             attention2 = attention1[:,ind].squeeze()
-            print(inf.shape, attention2.shape)
+            attention3 = attention2[diff_tf_ind,:].squeeze()
+            print(attention3.shape)
+            atten_sig = torch.sigmoid(attention3)
+            df = DataFrame(atten_sig)
+            df.index = diff_tf_names
+            df.columns = high_proteins
+            print(tf_names)
+            #df.to_csv("/home/aghktb/JOYS_PROJECT/mintomics/Tfs_highprot_control_adj.csv")
+            #print(inf.shape, attention2.shape)
             # Get top 100 genes along rows for all columns
-            top_genes_values, top_genes_indices = torch.topk(attention2, k=500, dim=0)
-            mask = torch.zeros_like(attention2)
-            print(top_genes_values)
-            mask[top_genes_indices, torch.arange(attention2.shape[1])] = 1.0*10000
+            #top_genes_values, top_genes_indices = torch.topk(attention3, k=500, dim=0)
+            #print(top_genes_indices.shape)
+            #mask = torch.zeros_like(attention3)
+            #print(top_genes_values)
+            #mask[top_genes_indices, torch.arange(attention3.shape[1])] = 1.0*10000
             
-            print(mask)
+            #print(mask)
             # Multiply the mask with the selected portion to keep only the top genes values
-            attention2 = attention2 * mask
-            # Calculate the hierarchical clustering
-            # Calculate the hierarchical clustering
-            #row_linkage = hierarchy.linkage(attention2, method='average')
-            #col_linkage = hierarchy.linkage(attention2.T, method='average')
-
-            # Reorder the matrix rows and columns based on the clustering
-            #idx_row = hierarchy.dendrogram(row_linkage, no_plot=True)['leaves']
-            #idx_col = hierarchy.dendrogram(col_linkage, no_plot=True)['leaves']
-            # Calculate the hierarchical clustering
-            #row_clusters = fastcluster.linkage(attention2, method='average')
-            #col_clusters = fastcluster.linkage(attention2.T, method='average')
+            #attention3 = attention3 * mask
             
+            top_tf_values, top_tf_indices = torch.topk(attention3, k=10, dim=0)
+            #print(top_tf_indices.shape)
+            attention4 = attention3[top_tf_indices,torch.arange(attention3.shape[1])]*10000
+            atten_sig = torch.sigmoid(attention4)
+
+
+            
+            top_tfs_names = [[diff_tf_names[idx] for idx in gene_top_indices] for gene_top_indices in top_tf_indices.T]
+            print(len(top_tfs_names))
+            tf_df = DataFrame(top_tfs_names)
+            tf_df.index = high_proteins
+            print(tf_df.T)
+            tf_df_T = tf_df.T
+            top_values_df = DataFrame(top_tf_values*10000)
+            top_values_df.columns = high_proteins
+            print(top_values_df)
+            tf_names_att_df = concat([tf_df_T, top_values_df], axis=1, join='outer')
+            print(tf_names_att_df)
+            #tf_names_att_df.to_csv("/home/aghktb/JOYS_PROJECT/mintomics/Tfs_highprot_control_n.csv",index=None)
+            
+            
+           
             # Plot the dendrogram for rows
-            fig1 = plt.figure(figsize=(80, 20))
-            sns.heatmap(attention2.T, cmap='rocket_r')
+            
+            fig1 = plt.figure(figsize=(40, 40))
+            sns.heatmap(atten_sig, cmap='rocket_r')
             plt.title("Scaled Attentions of Top 500  Genes Influencing Protein-Coding Gene Expressions")
             plt.xlabel("All Genes ")
             plt.ylabel("Protein-Coding Genes")
             plt.show()
-            # Plot the reordered matrix
-            #fig1 = plt.figure(figsize=(10, 10))
-            #sns.clustermap(attention2, cmap='bone')
-            #plt.show()
-            #attention = self.model.encod.self_attn.
-            #fig1 = plt.figure(figsize=(50, 100))
-            #ax = fig1.add_subplot(111)
-            #cax = ax.matshow(attention2.cpu().numpy(), cmap='bone')
-            #cax.autoscale()
-            #fig1.colorbar(cax)
             
             wandb.log({f"conf_mat" : wandb.Image(fig),"attentions":wandb.Image(fig1)})
             
@@ -207,7 +279,7 @@ def train_mintomics_classifier():
     test_loader = DataLoader(dataset=dataset_test, batch_size=BATCH_SIZE, shuffle=False, num_workers=DATALOADERS)
     model = Mintomics(learning_rate=1e-4,n_class=Num_classes)
     trainer = pl.Trainer.from_argparse_args(args)
-    logger = WandbLogger(project=args.project_name, entity=args.entity_name,name=args.save_dir+"_test_highpro", offline=False, save_dir=".")
+    logger = WandbLogger(project=args.project_name, entity=args.entity_name,name=args.save_dir+"_test_differential", offline=False, save_dir=".")
     trainer.logger = logger
     pest_checkpoint = DATASET_DIR+"/Trainings/"+args.save_dir+"/"+args.chkpt
     trainer.test(model, dataloaders=test_loader, ckpt_path=pest_checkpoint)
