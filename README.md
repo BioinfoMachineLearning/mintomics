@@ -22,17 +22,17 @@ For more details, see the [eLife article](https://elifesciences.org/articles/100
 
 ### Data Sources
 - **Gene Expression**: Processed CPM (counts per million) data for different stages:
-  - `Dataset/Data_cpm/Data_control.csv`
-  - `Dataset/Data_cpm/Data_0_5preg.csv`
-  - `Dataset/Data_cpm/Data_1_5preg.csv`
-  - `Dataset/Data_cpm/Data_2_5preg.csv`
+  - `Data/Data_cpm/Data_control.csv`
+  - `Data/Data_cpm/Data_0_5preg.csv`
+  - `Data/Data_cpm/Data_1_5preg.csv`
+  - `Data/Data_cpm/Data_2_5preg.csv`
 - **Protein Labels**: Normalized protein abundance labels:
-  - `Dataset/Labels_proc_log10_minmax/Labels_control.csv`
-  - `Dataset/Labels_proc_log10_minmax/Labels_0_5preg.csv`
-  - `Dataset/Labels_proc_log10_minmax/Labels_1_5preg.csv`
-  - `Dataset/Labels_proc_log10_minmax/Labels_2_5preg.csv`
+  - `Data/Labels_proc_log10_minmax/Labels_control.csv`
+  - `Data/Labels_proc_log10_minmax/Labels_0_5preg.csv`
+  - `Data/Labels_proc_log10_minmax/Labels_1_5preg.csv`
+  - `Data/Labels_proc_log10_minmax/Labels_2_5preg.csv`
 - **Transcription Factors**: List in `Mouse_TFs1`
-- **Differential Data**: Differentially expressed genes and proteins in `Dataset/Diff_data/` and `Dataset/Diff_labels/`
+- **Differential Data**: Differentially expressed genes and proteins in `Data/Diff_data/` and `Data/Diff_labels/`
 
 ### Data Preparation
 - Raw data is filtered, normalized (CPM, log, min-max), and split by stage.
