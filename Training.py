@@ -24,8 +24,8 @@ from torchmetrics.regression import MeanSquaredError,R2Score,MeanAbsoluteError
 from Model import TransformerMintomics
 from argparse import ArgumentParser
 import scipy.signal as signal
-from PrepareDataset import Psedu_data , Data2target,gene2protein
-from prepare_test_data import Data2target_test
+from src.dataset.PrepareDataset import Psedu_data, Data2target, gene2protein
+from src.dataset.prepare_test_data import Data2target_test
 
 
 AVAIL_GPUS = [1,2]
@@ -36,7 +36,7 @@ ACCELERATOR = "gpu"
 EPOCHS = 1
 ATT_HEAD = 1
 ENCODE_LAYERS = 1
-DATASET_DIR = "/home/aghktb/JOYS_PROJECT/mintomics"
+DATASET_DIR = "./"
 
 #label_dict = read_csv(DATASET_DIR+"/Dataset/Labels_proc/Labels_control.csv",index_col=0)
 #label_dict = read_csv(DATASET_DIR+"/Dataset/Labels_proc/Labels_control.csv",index_col=0)

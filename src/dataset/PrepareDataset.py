@@ -5,7 +5,7 @@ import pandas as pd
 from torch.utils.data import Dataset
 import matplotlib.pyplot as plt
 import os
-DATA_DIR = '/home/aghktb/JOYS_Project/mintomics'
+DATA_DIR = './'
 root = '/bmlfast/joy_RNA/Data/'
 dir_in = 'bulkRNA_p_'
 dir_out = 'protein_p_'
@@ -78,8 +78,8 @@ def gene2protein(stage = 'train', size = 10, pertage = 0.5):
     # print(data[0].tolist())
 
     # load data
-    Genedir = DATA_DIR+'/Dataset/Data_cpm/'
-    Prodir = DATA_DIR+'/Dataset/Labels_proc_log10_minmax/'
+    Genedir = DATA_DIR+'/Data/Data_cpm/'
+    Prodir = DATA_DIR+'/Data/Labels_proc_log10_minmax/'
     Gene_file = ['Data_0_5preg.csv', 'Data_1_5preg.csv', 'Data_control.csv']
     Pro_file = ['Labels_0_5preg.csv', 'Labels_1_5preg.csv', 'Labels_control.csv']
 
@@ -153,7 +153,7 @@ def gene2protein(stage = 'train', size = 10, pertage = 0.5):
 
 
     # load the mapping between GeneID and Protein accession, and convert the mapping to index pair
-    mapping = pd.read_csv(DATA_DIR+'/output_n.csv', delimiter='\t', header=None)
+    mapping = pd.read_csv(DATA_DIR+'/Data/gene2protein.csv', delimiter='\t', header=None)
     # print(mapping)
     Gene_map = mapping[mapping.columns[0]].tolist()
     Gene_map = [i.upper() for i in Gene_map]

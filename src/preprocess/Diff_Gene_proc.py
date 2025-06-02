@@ -14,7 +14,7 @@ def GeneFilter(df):
     return counts_df
 
 
-dfs = pd.read_csv("JOYS_Project/mintomics/Collaboration_data.csv",index_col=0,delimiter='\t')
+dfs = pd.read_csv("Data/Collaboration_data.csv",index_col=0,delimiter='\t')
 
 df_unique = dfs[~dfs.index.isna()]
 #
@@ -48,9 +48,9 @@ for idx in dfs_3pts_nops.index:
             print(idx)
             result_list.append(substring_map[key])
 print(result_list)
-maps = pd.read_csv("/home/aghktb/JOYS_Project/mintomics/output_n.csv",delimiter="\t",header=None,index_col=1)
+maps = pd.read_csv("Data/gene2protein.csv",delimiter="\t",header=None,index_col=1)
 print(maps)
-all_prot = pd.read_csv("/home/aghktb/JOYS_Project/mintomics/Labels_orig.csv")
+all_prot = pd.read_csv("Data/Labels_orig.csv")
 #
 
 
@@ -83,7 +83,7 @@ for co in substring_map.values():
     # Select genes based on adjusted p-value, log2 fold change, and base mean
         common_map = pd.DataFrame(list(set(sel_ge).intersection(list(genes))))
         #common_prot = pd.DataFrame(maps[maps[0].isin(common_map)].index.tolist())
-        common_map.to_csv("/home/aghktb/JOYS_PROJECT/mintomics/Siggenebasedprotlist_TC"+co+".csv",index=None,header=None)
+        common_map.to_csv("Data/Siggenebasedprotlist_TC"+co+".csv",index=None,header=None)
         
             
 
@@ -114,7 +114,7 @@ def min_max_normalize(df1):
     return df1  
 import protrank as pt
 ignore_ind = ['luminal protein so estrus','luminal protein so 0.5','luminal protein so 1.5','luminal protein so 2.5']
-data_p = pt.load_data("/home/aghktb/JOYS_Project/mintomics/Labels_orig.csv",ignore_cols=ignore_ind)
+data_p = pt.load_data("Data/Labels_orig.csv",ignore_cols=ignore_ind)
 print(data_p.shape)
 
 what_to_compare = [[['luminal protein estrus','luminal protein 0.5'], ['luminal protein estrus', 'luminal protein 1.5'], ['luminal protein estrus', 'luminal protein 2.5']]]
@@ -131,10 +131,10 @@ print(significant_df.head())
 for col in significant_df.columns:    
     significant_df1 = min_max_normalize(pd.DataFrame(significant_df[col]))
     print(significant_df1)
-    #significant_df1.to_csv('/home/aghktb/JOYS_Project/mintomics/Dataset/Diff_labels/'+col+'.csv')
+    #significant_df1.to_csv('Data/Diff_labels/'+col+'.csv')
 print(significant_df1)
 
-maps = pd.read_csv("/home/aghktb/JOYS_Project/mintomics/output_n.csv",delimiter="\t",header=None,index_col=1)
+maps = pd.read_csv("Data/gene2protein.csv",delimiter="\t",header=None,index_col=1)
 
 common_map = list(set(significant_proteins).intersection(list(maps.index)))
 print(len(common_map))

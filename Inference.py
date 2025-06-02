@@ -31,11 +31,11 @@ from Model import TransformerMintomics
 from argparse import ArgumentParser
 import scipy.signal as signal
 from PrepareDataset import Psedu_data , Data2target,gene2protein
-from prepare_test_data import Data2target_test
+from src.dataset.prepare_test_data import Data2target_test
 from scipy.cluster import hierarchy
 #from Diff_Gene_proc import selected_genes,significant_proteins,common_genes
 import itertools
-DATA_DIR = '/home/aghktb/JOYS_Project/mintomics'
+DATA_DIR = './Data'
 root = '/bmlfast/joy_RNA/Data/'
 dir_in = 'bulkRNA_p_'
 dir_out = 'protein_p_'
@@ -48,7 +48,7 @@ ACCELERATOR = "gpu"
 EPOCHS = 3
 ATT_HEAD = 1
 ENCODE_LAYERS = 2
-DATASET_DIR = "/home/aghktb/JOYS_PROJECT/mintomics"
+DATASET_DIR = "./"
 
 #label_dict = read_csv(DATASET_DIR+"/Dataset/Labels_proc/Labels_control.csv",index_col=0)
 #label_dict = read_csv(DATASET_DIR+"/Dataset/Labels_proc/Labels_control.csv",index_col=0)
@@ -146,8 +146,8 @@ class Mintomics(pl.LightningModule):
             dataset_outputs = outputs
             
             #torch.save(dataset_outputs,"Predictions.pt")
-            gene_names = read_csv("/home/aghktb/JOYS_Project/mintomics/Dataset/Data_cpm/Data_2_5preg.csv")
-            TForig = read_csv("/home/aghktb/JOYS_Project/mintomics/Mouse_TFs1",header=None)[0].tolist()
+            gene_names = read_csv(DATA_DIR+"/Data_cpm/Data_2_5preg.csv")
+            TForig = read_csv(DATA_DIR+"/Mouse_TFs1",header=None)[0].tolist()
             #print(gene_names)
             gene_name = gene_names["Unnamed: 0"]
             gene_name1 = gene_names["Unnamed: 0"].tolist()
@@ -206,7 +206,7 @@ class Mintomics(pl.LightningModule):
             df.index = tf_names
             df.columns = high_proteins
             #print(tf_names)
-            '''
+            
             #df.to_csv("/home/aghktb/JOYS_PROJECT/mintomics/Tfs_highprot_control_adj.csv")
             #print(inf.shape, attention2.shape)
             # Get top 100 genes along rows for all columns
@@ -252,7 +252,6 @@ class Mintomics(pl.LightningModule):
             plt.show()
             
             wandb.log({f"conf_mat" : wandb.Image(fig),"attentions":wandb.Image(fig1)})
-            '''
             return super().test_epoch_end(outputs)
     @staticmethod
     def add_model_specific_args(parent_parser):
