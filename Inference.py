@@ -33,7 +33,7 @@ import scipy.signal as signal
 from PrepareDataset import Psedu_data , Data2target,gene2protein
 from prepare_test_data import Data2target_test
 from scipy.cluster import hierarchy
-from Diff_Gene_proc import selected_genes,significant_proteins,common_genes
+#from Diff_Gene_proc import selected_genes,significant_proteins,common_genes
 import itertools
 DATA_DIR = '/home/aghktb/JOYS_Project/mintomics'
 root = '/bmlfast/joy_RNA/Data/'
@@ -82,8 +82,9 @@ class Mintomics(pl.LightningModule):
     
     def test_step(self,batch, batch_idx):
         batch_data = batch[0]
+        print(batch_data.shape)
         inf = batch[2]
-        tfs = batch_data[:,:,6]
+        tfs = batch_data[:, :, -1]
         
         y_hat,attnt = self.forward(batch_data)
         batch_label_class = batch[3]
@@ -145,16 +146,16 @@ class Mintomics(pl.LightningModule):
             dataset_outputs = outputs
             
             #torch.save(dataset_outputs,"Predictions.pt")
-            gene_names = read_csv("/home/aghktb/JOYS_Project/mintomics/Dataset/Data_cpm/Data_2_5preg.csv",)
-            
+            gene_names = read_csv("/home/aghktb/JOYS_Project/mintomics/Dataset/Data_cpm/Data_2_5preg.csv")
+            TForig = read_csv("/home/aghktb/JOYS_Project/mintomics/Mouse_TFs1",header=None)[0].tolist()
             #print(gene_names)
             gene_name = gene_names["Unnamed: 0"]
             gene_name1 = gene_names["Unnamed: 0"].tolist()
-            print(gene_name.head())
+            #print(gene_name.head())
             #get differentially significant genes
-            sele_genes = list(set(selected_genes))
+            #sele_genes = list(set(selected_genes))
             
-            diff_gene_ind = [gene_name1.index(gene) for gene in sele_genes]
+            #diff_gene_ind = [gene_name1.index(gene) for gene in sele_genes]
             #print(diff_gene_ind)
 
             
@@ -168,27 +169,29 @@ class Mintomics(pl.LightningModule):
             inf = torch.cat([x[f'inf'] for x in dataset_outputs]).squeeze()
 
             Tfs =  torch.cat([x[f'tfs'] for x in dataset_outputs]).squeeze()
-            
-            tf_ind = np.nonzero(Tfs>0).numpy()
-            
+            print(Tfs)
+            tf_ind = np.nonzero(Tfs>=1).numpy()
+            print(tf_ind)
             #tf_names = gene_name.values[tf_ind].tolist()
-            diff_tf_ind = torch.tensor(tf_ind[np.isin(tf_ind, diff_gene_ind)]).T.numpy()
-            print((tf_ind),(diff_tf_ind))
+            #diff_tf_ind = torch.tensor(tf_ind[np.isin(tf_ind, diff_gene_ind)]).T.numpy()
+            #print((tf_ind),(diff_tf_ind))
             #print(diff_tf_ind)
             tf_names = list(itertools.chain.from_iterable(gene_name.values[tf_ind].tolist()))
-            diff_tf_names = list(itertools.chain.from_iterable(gene_name.values[diff_tf_ind].tolist()))
+            #diff_tf_names = list(itertools.chain.from_iterable(gene_name.values[diff_tf_ind].tolist()))
             #print((tf_names))
-            print((tf_names),(diff_tf_names))
+            tf_lower = list(map(str.lower,tf_names))
+            result = list(set(tf_lower) - set(TForig))
+            print(result)
             protein_gene_names = gene_name.values[inf[0]]
             ###differential significan protein index
-            protein_diff_gene_name = [idx for idx in protein_gene_names if idx in common_genes]
-            protein_diff_gene_ind = [gene_name1.index(gene) for gene in common_genes]
-            print(len(protein_diff_gene_name))
-            print(len(ind),len(protein_diff_gene_ind))
-            diff_ind = [ind[np.isin(ind, protein_diff_gene_ind)]]
-            print(len(diff_ind))
+            #protein_diff_gene_name = [idx for idx in protein_gene_names if idx in common_genes]
+            #protein_diff_gene_ind = [gene_name1.index(gene) for gene in common_genes]
+            #print(len(protein_diff_gene_name))
+            #print(len(ind),len(protein_diff_gene_ind))
+            #diff_ind = [ind[np.isin(ind, protein_diff_gene_ind)]]
+            #print(len(diff_ind))
             high_proteins = list(itertools.chain.from_iterable(protein_gene_names[ind].tolist()))
-            #print(len(high_proteins))
+            print(len(high_proteins))
             #print(inf.shape)
             
             attention1 = attention.fill_diagonal_(0)
@@ -196,13 +199,14 @@ class Mintomics(pl.LightningModule):
 
             attention1 = attention1[:,inf[0]]
             attention2 = attention1[:,ind].squeeze()
-            attention3 = attention2[diff_tf_ind,:].squeeze()
-            print(attention3.shape)
+            attention3 = attention2[tf_ind,:].squeeze()
+            #print(attention3.shape)
             atten_sig = torch.sigmoid(attention3)
             df = DataFrame(atten_sig)
-            df.index = diff_tf_names
+            df.index = tf_names
             df.columns = high_proteins
-            print(tf_names)
+            #print(tf_names)
+            '''
             #df.to_csv("/home/aghktb/JOYS_PROJECT/mintomics/Tfs_highprot_control_adj.csv")
             #print(inf.shape, attention2.shape)
             # Get top 100 genes along rows for all columns
@@ -248,7 +252,7 @@ class Mintomics(pl.LightningModule):
             plt.show()
             
             wandb.log({f"conf_mat" : wandb.Image(fig),"attentions":wandb.Image(fig1)})
-            
+            '''
             return super().test_epoch_end(outputs)
     @staticmethod
     def add_model_specific_args(parent_parser):
@@ -279,7 +283,7 @@ def train_mintomics_classifier():
     test_loader = DataLoader(dataset=dataset_test, batch_size=BATCH_SIZE, shuffle=False, num_workers=DATALOADERS)
     model = Mintomics(learning_rate=1e-4,n_class=Num_classes)
     trainer = pl.Trainer.from_argparse_args(args)
-    logger = WandbLogger(project=args.project_name, entity=args.entity_name,name=args.save_dir+"_test_differential", offline=False, save_dir=".")
+    logger = WandbLogger(project=args.project_name, entity=args.entity_name,name=args.save_dir+"_test_New", offline=False, save_dir=".")
     trainer.logger = logger
     pest_checkpoint = DATASET_DIR+"/Trainings/"+args.save_dir+"/"+args.chkpt
     trainer.test(model, dataloaders=test_loader, ckpt_path=pest_checkpoint)

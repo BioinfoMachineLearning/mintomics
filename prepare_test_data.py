@@ -101,10 +101,10 @@ def gene2protein(stage = 'train', size = 10, pertage = 0.5):
             GeneID = set(GeneID)
 
             Intersect = GeneID.intersection(TF)
-            # print(len(Intersect))
+            print(len(Intersect))
 
             TF_label = [0.0 for i in range(len(GeneID))]
-            # print(len(TF_label))
+            print(len(TF_label))
 
             # assign the value 1.0 to the TF geneID
             for (i, j) in enumerate(GeneID):
@@ -113,19 +113,26 @@ def gene2protein(stage = 'train', size = 10, pertage = 0.5):
 
         print(f'{m} and number of TF: {TF_label.count(1.0)}\n')
         Gene['TF'] = TF_label
+        print(Gene.head())
         # convert dataframe to matrix
-        Gene_dat = Gene[Gene.columns[1:8]].values.astype(np.float32)
+        Gene_dat1 = Gene[Gene.columns[1:7]].values.astype(np.float32)
 
         # Normailize data by the difference between max and min
         # min = Gene_dat.min()
         # max = Gene_dat.max()
         # Gene_dat = (Gene_dat - min) / (max - min)
-        per_a = np.percentile(Gene_dat, 99.9)
-        Gene_dat = np.clip(Gene_dat, 0.0, per_a)
-        Gene_dat = Gene_dat / per_a
+        per_a = np.percentile(Gene_dat1, 99.9)
+        Gene_dat1 = np.clip(Gene_dat1, 0.0, per_a)
+        Gene_dat1 = Gene_dat1 / per_a
 
+        # Concatenate the 7th column (unchanged) back
+        Gene_7th_col = Gene[Gene.columns[7]].values.reshape(-1, 1)  # Reshape to match dimensions
+        Gene_dat = np.concatenate((Gene_dat1, Gene_7th_col), axis=1)
+
+        # Append to Gene_all list
         Gene_all.append(Gene_dat)
-        print(Gene_dat.shape)
+        #Gene_all.append(Gene_dat)
+        print(Gene_dat)
 
     
     # load protein data and information

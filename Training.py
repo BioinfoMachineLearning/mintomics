@@ -24,8 +24,8 @@ from torchmetrics.regression import MeanSquaredError,R2Score,MeanAbsoluteError
 from Model import TransformerMintomics
 from argparse import ArgumentParser
 import scipy.signal as signal
-from Diff_dataset import Psedu_data , Data2target,gene2protein
-from Diff_dataset_test import Data2target_test
+from PrepareDataset import Psedu_data , Data2target,gene2protein
+from prepare_test_data import Data2target_test
 
 
 AVAIL_GPUS = [1,2]
