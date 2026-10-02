@@ -50,7 +50,7 @@ print(len(rem))
 
 exit()
 
-to_file(mapping, 'Data/gene2protein.csv')
+to_file(mapping, 'Dataset/genetoprotein.csv')
 print("Found {} proteins, remaining {}".format(len(mapping), len(joy_proteins) - len(mapping)))
 
 exit()

@@ -16,3 +16,13 @@ lightning_logs/
 wandb/
 Trainings_Logs/
 info.pptx
+.venv/
+Trainings/tempo*
+Trainings/freshmask*
+Trainings/oldmask*
+Trainings/retrain*
+Trainings/tf_*
+representative_figures.py
+verification_report.json
+figures/*
+Dataset/TopTFs/*

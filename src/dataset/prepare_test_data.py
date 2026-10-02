@@ -5,7 +5,7 @@ import pandas as pd
 from torch.utils.data import Dataset
 import matplotlib.pyplot as plt
 import os
-DATA_DIR = './'
+DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "Dataset")
 root = '/bmlfast/joy_RNA/Data/'
 dir_in = 'bulkRNA_p_'
 dir_out = 'protein_p_'
@@ -65,7 +65,7 @@ def create_mock_data(n=10):
     return features, labels
 
 
-def gene2protein(stage = 'train', size = 10, pertage = 0.5):
+def gene2protein(stage = 'train', size = 10, pertage = 0.5, abundance_threshold = 0.8, expression_file = 'Data_2_5preg.csv', label_file = 'Labels_2_5preg.csv'):
     features = []
     labels = []
 
@@ -78,10 +78,10 @@ def gene2protein(stage = 'train', size = 10, pertage = 0.5):
     # print(data[0].tolist())
 
     # load data
-    Genedir = DATA_DIR+'/Data/Data_cpm/'
-    Prodir = DATA_DIR+'/Data/Labels_proc_log10_minmax/'
-    Gene_file = [ 'Data_2_5preg.csv']
-    Pro_file = ['Labels_2_5preg.csv']
+    Genedir = DATA_DIR+'/Data_cpm/'
+    Prodir = DATA_DIR+'/Labels_proc_log10_minmax/'
+    Gene_file = [expression_file]
+    Pro_file = [label_file]
 
 
     # load geneID data, information and add TF feature to the original dataset
@@ -93,23 +93,10 @@ def gene2protein(stage = 'train', size = 10, pertage = 0.5):
         print(n)
         Gene = pd.read_csv(Genedir + n)
         # Gene = Gene.head(16000)
+        ordered_genes = [str(i).upper() for i in Gene.iloc[:, 0].tolist()]
         if m == 0:
-            # print(Gene['Unnamed: 0'])
-            GeneID = Gene['Unnamed: 0'].tolist()
-            GeneID = [i.upper() for i in GeneID]
-            GeneID_t = GeneID
-            GeneID = set(GeneID)
-
-            Intersect = GeneID.intersection(TF)
-            print(len(Intersect))
-
-            TF_label = [0.0 for i in range(len(GeneID))]
-            print(len(TF_label))
-
-            # assign the value 1.0 to the TF geneID
-            for (i, j) in enumerate(GeneID):
-                if j in Intersect:
-                    TF_label[i] = 1.0
+            GeneID_t = ordered_genes
+        TF_label = [1.0 if gene in TF else 0.0 for gene in ordered_genes]
 
         print(f'{m} and number of TF: {TF_label.count(1.0)}\n')
         Gene['TF'] = TF_label
@@ -160,7 +147,7 @@ def gene2protein(stage = 'train', size = 10, pertage = 0.5):
 
 
     # load the mapping between GeneID and Protein accession, and convert the mapping to index pair
-    mapping = pd.read_csv(DATA_DIR+'/Data/gene2protein.csv', delimiter='\t', header=None)
+    mapping = pd.read_csv(DATA_DIR+'/genetoprotein.csv', delimiter='\t', header=None)
     # print(mapping)
     Gene_map = mapping[mapping.columns[0]].tolist()
     Gene_map = [i.upper() for i in Gene_map]
@@ -192,9 +179,9 @@ def gene2protein(stage = 'train', size = 10, pertage = 0.5):
         Gene_dat = dat  # gene data
         tar = torch.tensor(tar, dtype=torch.float32)  # protein data
 
-        P_lar = tar[tar > 0.8]
+        P_lar = tar[tar > abundance_threshold]
         
-        tar_clss = torch.as_tensor([1 if x>0.8 else 0 for x in tar])
+        tar_clss = torch.as_tensor([1 if x>abundance_threshold else 0 for x in tar])
         print(f'------- The number of original proterin: {tar.shape} and high expressed protein: {P_lar.shape} --------\n')
         print(tar_clss.shape)
         # print(tar)
@@ -216,8 +203,9 @@ def gene2protein(stage = 'train', size = 10, pertage = 0.5):
             for i in range(n):
                 # random mask any gene IDs, and find out the gene indeces in the mapping pool
                 gene_mask = np.random.choice(list(map_2_num.keys()), replace=False, size=int(len(Gene_2_num) * pertage))
-                Gene_dat[gene_mask] = 0.0
-                Gene_dat = torch.tensor(Gene_dat, dtype=torch.float32)
+                masked = np.array(dat, copy=True)
+                masked[gene_mask] = 0.0
+                Gene_dat = torch.tensor(masked, dtype=torch.float32)
                 gene_mask = list(map_2_num.keys())
                 prot_mask = [map_2_num[i] for i in gene_mask]
                 genes_2_proten = torch.tensor(np.array([gene_mask, prot_mask]), dtype=torch.int64)
@@ -232,8 +220,9 @@ def gene2protein(stage = 'train', size = 10, pertage = 0.5):
                 # random mask any gene IDs, and find out the gene indeces in the mapping pool
                 print(int(len(Gene_2_num) * pertage))
                 gene_mask = np.random.choice(list(map_2_num.keys()), replace=False, size=int(len(Gene_2_num) * pertage))
-                Gene_dat[gene_mask] = 0.0
-                Gene_dat = torch.tensor(Gene_dat, dtype=torch.float32)
+                masked = np.array(dat, copy=True)
+                masked[gene_mask] = 0.0
+                Gene_dat = torch.tensor(masked, dtype=torch.float32)
 
                 # find ou the corresponding protein indeces
                 prot_mask = [map_2_num[i] for i in gene_mask]
@@ -276,8 +265,13 @@ def gene2protein(stage = 'train', size = 10, pertage = 0.5):
     return data, target, info, target_classify
 
 class Data2target_test(Dataset):
-    def __init__(self, stage = 'train', size = 10, pertage = 0.5):
-        if os.path.exists(root+dir_index+ stage +'_'+ str(pertage)+'_'+str(size)+'.npy'):
+    def __init__(self, stage = 'train', size = 10, pertage = 0.5, abundance_threshold = 0.8, expression_file = 'Data_2_5preg.csv', label_file = 'Labels_2_5preg.csv'):
+        use_cached = (
+            expression_file == 'Data_2_5preg.csv'
+            and label_file == 'Labels_2_5preg.csv'
+            and os.path.exists(root+dir_index+ stage +'_'+ str(pertage)+'_'+str(size)+'.npy')
+        )
+        if use_cached:
             print("========== load dataset ================")
 
             self.data = np.load(root+dir_in + stage +'_'+ str(pertage)+'_'+str(size)+'.npy')
@@ -291,7 +285,7 @@ class Data2target_test(Dataset):
             self.target_classify = torch.from_numpy(self.target_classify)
 
         else:
-            self.data, self.target, self.info, self.target_classify = gene2protein(stage = stage, size = size, pertage = pertage)
+            self.data, self.target, self.info, self.target_classify = gene2protein(stage = stage, size = size, pertage = pertage, abundance_threshold = abundance_threshold, expression_file = expression_file, label_file = label_file)
 
     def __len__(self):
         return self.target.shape[0]
@@ -300,5 +294,6 @@ class Data2target_test(Dataset):
         return self.data[idx], self.target[idx], self.info[idx],self.target_classify[idx]
     
 
-d = Data2target_test()
-print(d[0])
+if __name__ == "__main__":
+    d = Data2target_test()
+    print(d[0])

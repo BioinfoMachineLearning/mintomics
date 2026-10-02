@@ -21,7 +21,7 @@ from torchmetrics.classification import BinaryAccuracy, BinaryRecall, BinaryPrec
 
 from torchmetrics.regression import MeanSquaredError,R2Score,MeanAbsoluteError
 
-from Model import TransformerMintomics
+from src.model.Model import TransformerMintomics
 from argparse import ArgumentParser
 import scipy.signal as signal
 from src.dataset.PrepareDataset import Psedu_data, Data2target, gene2protein
@@ -59,17 +59,17 @@ os.makedirs(CHECKPOINT_PATH, exist_ok=True)
 
 
 class Mintomics(pl.LightningModule):
-    def __init__(self, learning_rate=1e-4,attn_head=ATT_HEAD,encoder_layers=ENCODE_LAYERS,n_class=1, **model_kwargs):
+    def __init__(self, learning_rate=1e-4,attn_head=ATT_HEAD,encoder_layers=ENCODE_LAYERS,n_class=1, num_labels=76, **model_kwargs):
         super().__init__()
         
         self.save_hyperparameters()
         self.model = TransformerMintomics(attn_head=attn_head,encoder_layers=encoder_layers,n_class=n_class,**model_kwargs)
         self.loss_fn = nn.BCEWithLogitsLoss()
        
-        self.metrics_class = MetricCollection([MultilabelAccuracy(num_labels=76,average='micro'),
-                                              MultilabelPrecision(num_labels=76,average='micro'),
-                                              MultilabelF1Score(num_labels=76,average='micro'),
-                                              MultilabelRecall(num_labels=76,average='micro')])
+        self.metrics_class = MetricCollection([MultilabelAccuracy(num_labels=num_labels,average='micro'),
+                                              MultilabelPrecision(num_labels=num_labels,average='micro'),
+                                              MultilabelF1Score(num_labels=num_labels,average='micro'),
+                                              MultilabelRecall(num_labels=num_labels,average='micro')])
         #self.metrics_class = MetricCollection([BinaryAccuracy(),
         #                                 BinaryPrecision(),
         #                                 BinaryRecall(),
@@ -88,7 +88,7 @@ class Mintomics(pl.LightningModule):
     
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.hparams.learning_rate)
-        lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer=optimizer, mode='min', factor=0.1, patience=20, eps=1e-10, verbose=True)
+        lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer=optimizer, mode='min', factor=0.1, patience=20, eps=1e-10)
         metric_to_track = 'valid_loss'
         return{'optimizer':optimizer,
                'lr_scheduler':lr_scheduler,
@@ -102,7 +102,7 @@ class Mintomics(pl.LightningModule):
         #print(batch_data.shape)
         y_hat,_ = self.forward(batch_data)
         ##print(y_hat.shape)
-        batch_label_class = batch[3].cuda()
+        batch_label_class = batch[3].to(self.device)
         
         class_pred = y_hat[:, inf[0, 1]]
         
@@ -115,7 +115,7 @@ class Mintomics(pl.LightningModule):
         
         loss_class = self.loss_fn(class_pred,target.float())
         metric_log_class = self.train_metrics_class(class_pred, target)
-        self.log_dict(metric_log_class)
+        self.log_dict(metric_log_class, on_step=True, on_epoch=True)
         loss = (loss_class)
         self.log('train_loss',loss, on_step=True, on_epoch=True, sync_dist=True)
         return loss
@@ -128,7 +128,7 @@ class Mintomics(pl.LightningModule):
         #print(batch_data.shape)
         y_hat,_ = self.forward(batch_data)
         ##print(y_hat.shape)
-        batch_label_class = batch[3].cuda()
+        batch_label_class = batch[3].to(self.device)
         
         class_pred = y_hat[:, inf[0, 1]]
         
@@ -141,7 +141,7 @@ class Mintomics(pl.LightningModule):
         
         loss_class = self.loss_fn(class_pred,target.float())
         metric_log_class = self.valid_metrics_class(class_pred, target)
-        self.log_dict(metric_log_class)
+        self.log_dict(metric_log_class, on_step=True, on_epoch=True)
         loss = (loss_class)
         self.log('valid_loss',loss, on_step=True, on_epoch=True, sync_dist=True)
         return loss
@@ -151,7 +151,7 @@ class Mintomics(pl.LightningModule):
         batch_data = batch[0]
         inf = batch[2]
         y_hat,attnt = self.forward(batch_data)
-        batch_label_class = batch[3].cuda()
+        batch_label_class = batch[3].to(self.device)
         
         class_pred = y_hat[:, inf[0, 1]]
         
@@ -183,7 +183,7 @@ class Mintomics(pl.LightningModule):
             #torch.save(dataset_outputs,"Predictions.pt")
             class_preds = torch.cat([x[f'preds_class'] for x in dataset_outputs])
             class_targets = torch.cat([x[f'targets_class'] for x in dataset_outputs])
-            conf_mat = BinaryConfusionMatrix().cuda()
+            conf_mat = BinaryConfusionMatrix().to(self.device)
             conf_vals = conf_mat(class_preds, class_targets)
             fig = sns.heatmap(conf_vals.cpu() , annot=True, cmap="Blues", fmt="d")
             ind = torch.nonzero(class_targets[0,:]>0.5)
@@ -241,16 +241,109 @@ class Mintomics(pl.LightningModule):
         return parser
 
 
+def _logged_series(frame, column):
+    if column not in frame.columns:
+        return None
+    series = frame.dropna(subset=[column])
+    if series.empty:
+        return None
+    return series
+
+
+def _smooth(values):
+    window = max(1, len(values) // 50)
+    return values.rolling(window, min_periods=1, center=True).mean()
+
+
+def _style_axes(axes):
+    for ax in axes:
+        ax.tick_params(labelsize=16)
+        ax.xaxis.label.set_size(18)
+        ax.yaxis.label.set_size(18)
+        ax.title.set_size(20)
+
+
+def save_training_curves(metrics_csv, loss_png, metrics_png):
+    frame = read_csv(metrics_csv)
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5.5), sharey=True)
+    train_loss = _logged_series(frame, 'train_loss_step')
+    valid_loss = _logged_series(frame, 'valid_loss_step')
+    if train_loss is not None:
+        axes[0].plot(train_loss['step'], _smooth(train_loss['train_loss_step']))
+    if valid_loss is not None:
+        axes[1].plot(valid_loss['step'], _smooth(valid_loss['valid_loss_step']), color='C1')
+    axes[0].set_title('training loss')
+    axes[1].set_title('validation loss')
+    for ax in axes:
+        ax.set_xlabel('step')
+        ax.set_ylabel('loss')
+    _style_axes(axes)
+    fig.tight_layout()
+    fig.savefig(loss_png, dpi=360)
+    plt.close(fig)
+
+    metric_names = [
+        ('MultilabelAccuracy', 'accuracy'),
+        ('MultilabelPrecision', 'precision'),
+        ('MultilabelRecall', 'recall'),
+        ('MultilabelF1Score', 'F1'),
+    ]
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5.5), sharey=True)
+    for key, label in metric_names:
+        train_col = f'train_{key}_step' if f'train_{key}_step' in frame.columns else f'train_{key}'
+        valid_col = f'valid_{key}_step' if f'valid_{key}_step' in frame.columns else f'valid_{key}'
+        train_metric = _logged_series(frame, train_col)
+        valid_metric = _logged_series(frame, valid_col)
+        if train_metric is not None:
+            axes[0].plot(train_metric['step'], _smooth(train_metric[train_col]), label=label)
+        if valid_metric is not None:
+            axes[1].plot(valid_metric['step'], _smooth(valid_metric[valid_col]), label=label)
+    axes[0].set_title('training metrics')
+    axes[1].set_title('validation metrics')
+    for ax in axes:
+        ax.set_xlabel('step')
+        ax.set_ylabel('score')
+        ax.set_ylim(0, 1)
+        ax.legend(fontsize=16)
+    _style_axes(axes)
+    fig.tight_layout()
+    fig.savefig(metrics_png, dpi=360)
+    plt.close(fig)
+
+
+def save_heldout_confusion(model, dataset, out_png, device):
+    model.eval()
+    model.to(device)
+    sample = dataset[0]
+    features = sample[0].unsqueeze(0).to(device)
+    protein_index = sample[2][1].long().to(device)
+    labels = sample[3].to(device).reshape(-1)
+    with torch.no_grad():
+        logits, _ = model(features)
+    class_preds = logits[0, protein_index]
+    class_targets = labels[protein_index]
+    confusion = BinaryConfusionMatrix().to(device)
+    values = confusion(class_preds, class_targets.int()).detach().cpu().numpy()
+    fig, ax = plt.subplots(figsize=(6, 5))
+    sns.heatmap(values, annot=True, cmap='Blues', fmt='d', ax=ax, annot_kws={'size': 18})
+    ax.tick_params(labelsize=16)
+    colorbar = ax.collections[0].colorbar if ax.collections else None
+    if colorbar is not None:
+        colorbar.ax.tick_params(labelsize=16)
+    fig.tight_layout()
+    fig.savefig(out_png, dpi=360)
+    plt.close(fig)
+    return values
+
+
 def train_mintomics_classifier():
     pl.seed_everything(42)
-    # Ensure that all operations are deterministic on GPU (if used) for reproducibility
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
     parser = ArgumentParser()
-    parser = pl.Trainer.add_argparse_args(parser)
     parser = Mintomics.add_model_specific_args(parser)
-    parser.add_argument('--num_gpus', type=int, default=AVAIL_GPUS,
+    parser.add_argument('--num_gpus', type=int, default=1,
                         help="Number of GPUs to use (e.g. -1 = all available GPUs)")
     parser.add_argument('--nodes', type=int, default=NUM_NODES, help="Number of nodes to use")
     parser.add_argument('--num_epochs', type=int, default=EPOCHS, help="Number of epochs")
@@ -260,57 +353,63 @@ def train_mintomics_classifier():
     parser.add_argument('--entity_name', type=str, default='aghktb', help="Weights and Biases entity name")
     parser.add_argument('--project_name', type=str, default='Mintomics',
                         help="Weights and Biases project name")
-    parser.add_argument('--save_dir', type=str, default=CHECKPOINT_PATH, help="Directory in which to save models")
-
-    parser.add_argument('--unit_test', type=int, default=False,
+    parser.add_argument('--save_dir', type=str, default='retrain', help="Directory in which to save models")
+    parser.add_argument('--abundance_threshold', type=float, default=0.8,
+                        help="Protein abundance cutoff for the positive class")
+    parser.add_argument('--unit_test', type=int, default=0,
                         help="helps in debug, this touches all the parts of code."
                              "Enter True or num of batch you want to send, " "eg. 1 or 7")
     args = parser.parse_args()
-    
-    args.devices = args.num_gpus
-    args.num_nodes = args.nodes
-    args.accelerator = ACCELERATOR
-    args.max_epochs = args.num_epochs
-    args.fast_dev_run = args.unit_test
-    args.log_every_n_steps = 1
-    args.detect_anomaly = True
-    args.enable_model_summary = True
-    args.weights_summary = "full"
-    save_PATH = DATASET_DIR+"/Trainings/"+args.save_dir
+
+    save_PATH = os.path.join(DATASET_DIR, "Trainings", args.save_dir)
     os.makedirs(save_PATH, exist_ok=True)
 
-    # load data and get corresponding information
-    dataset_train = Data2target(stage='train', size = 4000, pertage = 0.15)  #100 samples each dp
-    dataset_valid = Data2target(stage='valid', size = 1000, pertage = 0.15) 
-    dataset_test = Data2target_test(stage='test',size=2000,pertage=0.15)
-    #train_size = int(0.7 * len(dataset))
-    #val_size = int(0.1 * len(dataset))
-    #test_size = len(dataset) - (train_size+val_size)
-    #dataset_train,dataset_valid,dataset_test = torch.utils.data.random_split(dataset, [train_size, val_size,test_size])
-    
-    #dataset_valid = MicrographDataValid(DATASET_DIR)
-    #dataset_test = MicrographDataValid(DATASET_DIR) # using validation data for testing here
-    train_loader = DataLoader(dataset=dataset_train, batch_size=BATCH_SIZE, shuffle=True, num_workers=args.num_dataloader_workers)
-    
-    valid_loader = DataLoader(dataset=dataset_valid, batch_size=BATCH_SIZE, shuffle=False, num_workers=args.num_dataloader_workers)
-    test_loader = DataLoader(dataset=dataset_test, batch_size=BATCH_SIZE, shuffle=False, num_workers=args.num_dataloader_workers)
-   # torch.save(test_loader,DATASET_DIR+'/test.pt')
-    model = Mintomics(learning_rate=1e-4,n_class=Num_classes)
-    
-    trainer = pl.Trainer.from_argparse_args(args)
-    checkpoint_callback = ModelCheckpoint(monitor='valid_loss', save_top_k=10, dirpath=save_PATH, filename='mintomics_{epoch:02d}_{valid_loss:6f}')
+    dataset_train = Data2target(stage='train', size = 4000, pertage = 0.15, abundance_threshold=args.abundance_threshold)
+    dataset_valid = Data2target(stage='valid', size = 1000, pertage = 0.15, abundance_threshold=args.abundance_threshold)
+    dataset_test = Data2target_test(stage='test', size=1, pertage=0.0, abundance_threshold=args.abundance_threshold)
+    train_loader = DataLoader(dataset=dataset_train, batch_size=args.batch_size, shuffle=True, num_workers=args.num_dataloader_workers)
+    valid_loader = DataLoader(dataset=dataset_valid, batch_size=args.batch_size, shuffle=False, num_workers=args.num_dataloader_workers)
+
+    num_labels = int(dataset_train.info.shape[-1])
+    model = Mintomics(learning_rate=1e-4, n_class=Num_classes, num_labels=num_labels)
+    checkpoint_callback = ModelCheckpoint(monitor='valid_loss', save_top_k=10, dirpath=save_PATH, filename='mintomics_{epoch:02d}_{valid_loss:.6f}')
     lr_monitor = LearningRateMonitor(logging_interval='epoch')
     early_stopping_callback = EarlyStopping(monitor='valid_loss', mode='min', min_delta=0.0, patience=30)
-    trainer.callbacks = [checkpoint_callback, lr_monitor, early_stopping_callback]
-    logger = WandbLogger(project=args.project_name, entity=args.entity_name,name=args.save_dir, offline=False, save_dir=".")
-    trainer.logger = logger
-    wandb.init()
+    from lightning.pytorch.loggers import CSVLogger
+    csv_logger = CSVLogger(save_dir=save_PATH, name='metrics')
+    accelerator = 'gpu' if torch.cuda.is_available() else 'cpu'
+    devices = args.num_gpus if accelerator == 'gpu' else 1
+    trainer = pl.Trainer(
+        accelerator=accelerator,
+        devices=devices,
+        num_nodes=args.nodes,
+        max_epochs=args.num_epochs,
+        log_every_n_steps=1,
+        enable_model_summary=True,
+        callbacks=[checkpoint_callback, lr_monitor, early_stopping_callback],
+        logger=csv_logger,
+        deterministic=False,
+        limit_train_batches=args.unit_test if args.unit_test else 1.0,
+        limit_val_batches=args.unit_test if args.unit_test else 1.0,
+    )
     trainer.fit(model, train_loader, valid_loader)
-    trainer.test(dataloaders=test_loader, ckpt_path='best')
+    metrics_csv = os.path.join(csv_logger.log_dir, 'metrics.csv')
+    save_training_curves(
+        metrics_csv,
+        os.path.join(save_PATH, 'train_val_loss_curves.png'),
+        os.path.join(save_PATH, 'train_val_metrics_curves.png'),
+    )
+    best_path = trainer.checkpoint_callback.best_model_path
+    best_model = Mintomics.load_from_checkpoint(best_path)
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    values = save_heldout_confusion(best_model, dataset_test, os.path.join(save_PATH, 'heldout_confusion_matrix.png'), device)
+    print('confusion_matrix', values.tolist())
+    print('loss_curves', os.path.join(save_PATH, 'train_val_loss_curves.png'))
+    print('metrics_curves', os.path.join(save_PATH, 'train_val_metrics_curves.png'))
+    print('checkpoint', best_path)
    
 
 
 
 if __name__ == "__main__":
     train_mintomics_classifier()
-    wandb.finish()

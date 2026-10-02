@@ -18,62 +18,121 @@ The oviduct (fallopian tube) is the site of fertilization and preimplantation em
 
 For more details, see the [eLife article](https://elifesciences.org/articles/100705).
 
-## Data Sampling & Structure
+## Data
 
-### Data Sources
-- **Gene Expression**: Processed CPM (counts per million) data for different stages:
-  - `Data/Data_cpm/Data_control.csv`
-  - `Data/Data_cpm/Data_0_5preg.csv`
-  - `Data/Data_cpm/Data_1_5preg.csv`
-  - `Data/Data_cpm/Data_2_5preg.csv`
-- **Protein Labels**: Normalized protein abundance labels:
-  - `Data/Labels_proc_log10_minmax/Labels_control.csv`
-  - `Data/Labels_proc_log10_minmax/Labels_0_5preg.csv`
-  - `Data/Labels_proc_log10_minmax/Labels_1_5preg.csv`
-  - `Data/Labels_proc_log10_minmax/Labels_2_5preg.csv`
-- **Transcription Factors**: List in `Mouse_TFs1`
-- **Differential Data**: Differentially expressed genes and proteins in `Data/Diff_data/` and `Data/Diff_labels/`
+Inputs are read from `Dataset/`.
 
-### Data Preparation
-- Raw data is filtered, normalized (CPM, log, min-max), and split by stage.
-- Transcription factors are annotated in the gene list.
-- Data loaders sample gene-protein pairs for model training/testing.
+- **Gene expression** (CPM): `Dataset/Data_cpm/Data_control.csv`, `Data_0_5preg.csv`, `Data_1_5preg.csv`, `Data_2_5preg.csv`
+- **Protein labels**: `Dataset/Labels_proc_log10_minmax/Labels_control.csv`, `Labels_0_5preg.csv`, `Labels_1_5preg.csv`, `Labels_2_5preg.csv`
+- **Transcription-factor symbols**: `Dataset/Mouse_TFs1`, one symbol per line. A gene in the expression table is marked with the TF input flag when its symbol is in this file.
+- **Gene-to-protein map**: `Dataset/genetoprotein.csv`
+- **Differential inputs**: `Dataset/Collaboration_data.csv`, `Dataset/Labels_orig.csv`, `Dataset/Diff_data/`, `Dataset/Diff_labels/`
 
-## Pipeline Usage
+Training and validation mask 15% of the mapped gene-protein pairs. Held-out inference uses the pairs unmasked.
 
-### Requirements
-- Python 3.8+
-- PyTorch, PyTorch Lightning, pandas, numpy, seaborn, matplotlib, wandb, mlxtend, rnanorm, scipy, torchmetrics
+## Setup
 
-Install dependencies (example):
+The pinned environment is Python 3.11 with PyTorch 2.6.0 for CUDA 12.4. From the repository root:
+
 ```bash
-pip install torch pytorch-lightning pandas numpy seaborn matplotlib wandb mlxtend rnanorm scipy torchmetrics
+python3.11 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
-### Training the Model
-Run the following command to train the transformer-based model:
+`requirements.txt` includes the PyTorch CUDA 12.4 index and the packages used by training, inference, and the DESeq2 gene list (`lightning`, `torchmetrics`, `pandas`, `pydeseq2`, `rnanorm`, and their dependencies).
+
+## Training
+
 ```bash
-python Training.py --num_gpus 1 --nodes 1 --num_epochs 100 --batch_size 8 --save_dir tempo
+.venv/bin/python Training.py \
+  --num_gpus 1 \
+  --nodes 1 \
+  --num_epochs 1 \
+  --batch_size 1 \
+  --abundance_threshold 0.6 \
+  --save_dir exprscale_0.6
 ```
-- Training and validation data are automatically loaded from the `Dataset/` directory.
-- Model checkpoints and logs are saved in `Trainings/`.
 
-### Inference
-To run inference on test data using a trained checkpoint:
+| Argument | Default | Role |
+|---|---|---|
+| `--num_gpus` | `1` | GPUs used by the trainer |
+| `--nodes` | `1` | Machines used by the trainer |
+| `--num_epochs` | `1` | Training epochs |
+| `--batch_size` | `1` | Batch size |
+| `--abundance_threshold` | `0.8` | Protein abundance cutoff for the positive class |
+| `--save_dir` | `retrain` | Subdirectory of `Trainings/` for the checkpoint |
+| `--learning_rate` | `1e-4` | Optimizer learning rate |
+| `--num_dataloader_workers` | `1` | Data-loader workers |
+
+The seed is 42. Checkpoints are written under `Trainings/<save_dir>/`. Use the same `--abundance_threshold` at inference as was used for that checkpoint. Existing runs are `Trainings/exprscale_0.6/` and `Trainings/exprscale_0.8/`.
+
+Set `WANDB_MODE=offline` to keep Weights & Biases from contacting the network.
+
+## Inference
+
 ```bash
-python Inference.py --save_dir tempo --chkpt <checkpoint_file.ckpt>
+WANDB_MODE=offline .venv/bin/python Inference.py \
+  --timepoint all \
+  --abundance_threshold 0.6 \
+  --save_dir exprscale_0.6 \
+  --chkpt mintomics_epoch=00_valid_loss=0.089202.ckpt
 ```
-- Replace `<checkpoint_file.ckpt>` with the actual checkpoint filename from `Trainings/tempo/`.
 
-### Data Preprocessing
-Data preprocessing scripts are provided (see `Data_preprocessing.py`).
-- Generates normalized gene and protein data for each stage.
-- Example: `python Data_preprocessing.py`
+| Argument | Default | Role |
+|---|---|---|
+| `--chkpt` | none | Checkpoint filename inside `Trainings/<save_dir>/`. Required. |
+| `--save_dir` | `Trainings/tempo` | Subdirectory of `Trainings/` that contains `--chkpt` |
+| `--timepoint` | `2.5` | `0.5`, `1.5`, `2.5`, or `all` |
+| `--abundance_threshold` | `0.8` | Positive-class cutoff. Match the checkpoint. |
+| `--num_gpus` | `1` | GPUs used by the trainer |
 
-## Output & Analysis
-- Model outputs include predicted protein abundances and attention scores for gene-protein relationships.
-- Result analysis scripts (e.g., `Result_analysis.py`) help interpret key transcription factors and proteins.
-- Visualizations and logs are available via Weights & Biases (wandb).
+For the 0.8 checkpoint:
+
+```bash
+WANDB_MODE=offline .venv/bin/python Inference.py \
+  --timepoint 2.5 \
+  --abundance_threshold 0.8 \
+  --save_dir exprscale_0.8 \
+  --chkpt mintomics_epoch=00_valid_loss=0.011100.ckpt
+```
+
+## Intermediate files
+
+Inference and the differential-gene script write to `intermediate_files/` at the repository root. They do not replace files in `Dataset/`.
+
+### Top-ranked genes and figures
+
+`Inference.py` writes one set of files per stage. The stage tag is the timepoint with the dot replaced by an underscore (`0_5`, `1_5`, `2_5`).
+
+- `Tfs_allprot_<tag>.csv`: for each mapped protein, the 25 genes with the highest attention. The table has 25 data rows. Gene symbols occupy the first half of the columns and the sigmoid-scaled attention scores occupy the second half, under the same protein headers.
+- `inference_confusion_matrix_<tag>.png`: held-out binary confusion matrix at the chosen abundance threshold.
+- `inference_attention_<tag>.png`: attention heatmap for the high-abundance proteins.
+
+The top-25 ranking uses every gene in the expression table. It is not limited to `Dataset/Mouse_TFs1`.
+
+### Significant-gene lists
+
+From the repository root:
+
+```bash
+.venv/bin/python src/preprocess/Diff_Gene_proc.py
+```
+
+The script reads `Dataset/Collaboration_data.csv`, drops genes whose counts sum to less than 10, drops the 3.5 and pseudo samples, and runs DESeq2 for T0.5, T1.5, and T2.5 against the Finnerty control `TC`. Genes kept have adjusted p < 0.05 and absolute log2 fold change > 0.1, and they must map through `Dataset/genetoprotein.csv` to an accession in `Dataset/Labels_orig.csv`.
+
+It writes one symbol per line, without a header:
+
+- `intermediate_files/Siggenebasedprotlist_TCT0.5.csv`
+- `intermediate_files/Siggenebasedprotlist_TCT1.5.csv`
+- `intermediate_files/Siggenebasedprotlist_TCT2.5.csv`
+
+Those three files are written before the later protein-ranking section. That section imports `protrank`, which is not on the default module path, so the process can exit after the lists have already been saved.
+
+## Output and analysis
+
+- `Result_analysis.py` reads the top-ranked tables and the significant-gene lists.
+- Training logs go to Weights & Biases. Use `WANDB_MODE=offline` for a local run.
 
 ## Reference
 - Finnerty RM, Carulli DJ, Hedge A, et al. (2025). Multi-omics analyses and machine learning prediction of oviductal responses in the presence of gametes and embryos. _eLife_ 13:RP100705. [https://elifesciences.org/articles/100705](https://elifesciences.org/articles/100705)

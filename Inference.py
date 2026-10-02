@@ -27,15 +27,15 @@ from torchmetrics import MetricCollection
 from torchmetrics.classification import BinaryAccuracy, BinaryRecall, BinaryPrecision, BinaryConfusionMatrix, BinaryF1Score,MulticlassAccuracy, MultilabelAccuracy, MultilabelF1Score, MultilabelConfusionMatrix,MultilabelPrecision,MultilabelRecall,MulticlassPrecision,MulticlassRecall,MulticlassF1Score,MulticlassConfusionMatrix
 from torchmetrics.regression import MeanSquaredError,R2Score,MeanAbsoluteError
 
-from Model import TransformerMintomics
+from src.model.Model import TransformerMintomics
 from argparse import ArgumentParser
 import scipy.signal as signal
-from PrepareDataset import Psedu_data , Data2target,gene2protein
+from src.dataset.PrepareDataset import Psedu_data , Data2target,gene2protein
 from src.dataset.prepare_test_data import Data2target_test
 from scipy.cluster import hierarchy
 #from Diff_Gene_proc import selected_genes,significant_proteins,common_genes
 import itertools
-DATA_DIR = './Data'
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Dataset")
 root = '/bmlfast/joy_RNA/Data/'
 dir_in = 'bulkRNA_p_'
 dir_out = 'protein_p_'
@@ -58,10 +58,11 @@ Num_classes = 3060
 CHECKPOINT_PATH = f"{DATASET_DIR}/Trainings/tempo"
 os.makedirs(CHECKPOINT_PATH, exist_ok=True)
 class Mintomics(pl.LightningModule):
-    def __init__(self, learning_rate=1e-4,attn_head=ATT_HEAD,encoder_layers=ENCODE_LAYERS,n_class=1, **model_kwargs):
+    def __init__(self, learning_rate=1e-4,attn_head=ATT_HEAD,encoder_layers=ENCODE_LAYERS,n_class=1, abundance_threshold=0.8, **model_kwargs):
         super().__init__()
         
         self.save_hyperparameters()
+        self.abundance_threshold = abundance_threshold
         self.model = TransformerMintomics(attn_head=attn_head,encoder_layers=encoder_layers,n_class=n_class,**model_kwargs)
         self.loss_fn = nn.BCEWithLogitsLoss()
        
@@ -115,7 +116,11 @@ class Mintomics(pl.LightningModule):
         #conf_vals = conf_mat(class_pred, batch_label_class.squeeze())
         #print("Test Data Confusion Matrix: \n")
         #print(conf_vals)
-        return {f'preds_class' : class_pred, f'targets_class' :target,f'attention':attnt,f'inf':inf,f'tfs':tfs}
+        output = {f'preds_class' : class_pred, f'targets_class' :target,f'attention':attnt,f'inf':inf,f'tfs':tfs}
+        if not hasattr(self, "test_outputs"):
+            self.test_outputs = []
+        self.test_outputs.append(output)
+        return output
     def construct_networkx(edge_weight_matrix):
             """
               Constructs a network from an edge weight matrix.
@@ -139,14 +144,16 @@ class Mintomics(pl.LightningModule):
 
               # Return the data object.
             return data  
-    def test_epoch_end(self, outputs):
+    def on_test_epoch_start(self):
+        self.test_outputs = []
+
+    def on_test_epoch_end(self):
         # Log individual results for each dataset
-        
-        #for i  in range(len(outputs)):
-            dataset_outputs = outputs
+            dataset_outputs = self.test_outputs
             
             #torch.save(dataset_outputs,"Predictions.pt")
-            gene_names = read_csv(DATA_DIR+"/Data_cpm/Data_2_5preg.csv")
+            expression_file = getattr(self, "expression_file", "Data_2_5preg.csv")
+            gene_names = read_csv(os.path.join(DATA_DIR, "Data_cpm", expression_file))
             TForig = read_csv(DATA_DIR+"/Mouse_TFs1",header=None)[0].tolist()
             #print(gene_names)
             gene_name = gene_names["Unnamed: 0"]
@@ -161,16 +168,16 @@ class Mintomics(pl.LightningModule):
             
             class_preds = torch.cat([x[f'preds_class'] for x in dataset_outputs])
             class_targets = torch.cat([x[f'targets_class'] for x in dataset_outputs])
-            conf_mat = BinaryConfusionMatrix()
-            conf_vals = conf_mat(class_preds, class_targets)
+            conf_mat = BinaryConfusionMatrix().to(class_preds.device)
+            conf_vals = conf_mat(class_preds, class_targets.int())
             fig = sns.heatmap(conf_vals.cpu() , annot=True, cmap="Blues", fmt="d")
-            ind = torch.nonzero(class_targets[0,:]>0.8)
+            ind = torch.nonzero(class_targets[0,:]>self.abundance_threshold)
             attention = torch.cat([x[f'attention'] for x in dataset_outputs]).squeeze()
             inf = torch.cat([x[f'inf'] for x in dataset_outputs]).squeeze()
 
             Tfs =  torch.cat([x[f'tfs'] for x in dataset_outputs]).squeeze()
             print(Tfs)
-            tf_ind = np.nonzero(Tfs>=1).numpy()
+            tf_ind = np.nonzero((Tfs >= 1).detach().cpu()).numpy()
             print(tf_ind)
             #tf_names = gene_name.values[tf_ind].tolist()
             #diff_tf_ind = torch.tensor(tf_ind[np.isin(tf_ind, diff_gene_ind)]).T.numpy()
@@ -182,7 +189,7 @@ class Mintomics(pl.LightningModule):
             tf_lower = list(map(str.lower,tf_names))
             result = list(set(tf_lower) - set(TForig))
             print(result)
-            protein_gene_names = gene_name.values[inf[0]]
+            protein_gene_names = gene_name.values[inf[0].detach().cpu().numpy()]
             ###differential significan protein index
             #protein_diff_gene_name = [idx for idx in protein_gene_names if idx in common_genes]
             #protein_diff_gene_ind = [gene_name1.index(gene) for gene in common_genes]
@@ -190,7 +197,7 @@ class Mintomics(pl.LightningModule):
             #print(len(ind),len(protein_diff_gene_ind))
             #diff_ind = [ind[np.isin(ind, protein_diff_gene_ind)]]
             #print(len(diff_ind))
-            high_proteins = list(itertools.chain.from_iterable(protein_gene_names[ind].tolist()))
+            high_proteins = list(itertools.chain.from_iterable(protein_gene_names[ind.detach().cpu().numpy()].tolist()))
             print(len(high_proteins))
             #print(inf.shape)
             
@@ -198,11 +205,25 @@ class Mintomics(pl.LightningModule):
             
 
             attention1 = attention1[:,inf[0]]
+            top_gene_values, top_gene_indices = torch.topk(attention1, k=25, dim=0)
+            allprot_names = DataFrame(
+                gene_name.values[top_gene_indices.detach().cpu().numpy()],
+                columns=protein_gene_names,
+            )
+            allprot_scores = DataFrame(
+                torch.sigmoid(top_gene_values * 10000).detach().cpu().numpy(),
+                columns=protein_gene_names,
+            )
+            allprot = concat([allprot_names, allprot_scores], axis=1)
+            allprot_path = getattr(self, "allprot_path", os.path.join(DATA_DIR, "TopTFs", "Tfs_allprot_2_5.csv"))
+            os.makedirs(os.path.dirname(allprot_path), exist_ok=True)
+            allprot.to_csv(allprot_path, index=False)
+            print("Tfs_allprot", allprot_path, allprot_names.shape)
             attention2 = attention1[:,ind].squeeze()
             attention3 = attention2[tf_ind,:].squeeze()
             #print(attention3.shape)
             atten_sig = torch.sigmoid(attention3)
-            df = DataFrame(atten_sig)
+            df = DataFrame(atten_sig.detach().cpu().numpy())
             df.index = tf_names
             df.columns = high_proteins
             #print(tf_names)
@@ -222,18 +243,18 @@ class Mintomics(pl.LightningModule):
             
             top_tf_values, top_tf_indices = torch.topk(attention3, k=10, dim=0)
             #print(top_tf_indices.shape)
-            attention4 = attention3[top_tf_indices,torch.arange(attention3.shape[1])]*10000
-            atten_sig = torch.sigmoid(attention4)
+            attention4 = attention3[top_tf_indices, torch.arange(attention3.shape[1], device=attention3.device)] * 10000
+            atten_sig = torch.sigmoid(attention4).detach().cpu().numpy()
 
 
             
-            top_tfs_names = [[diff_tf_names[idx] for idx in gene_top_indices] for gene_top_indices in top_tf_indices.T]
+            top_tfs_names = [[tf_names[idx] for idx in gene_top_indices] for gene_top_indices in top_tf_indices.detach().cpu().T]
             print(len(top_tfs_names))
             tf_df = DataFrame(top_tfs_names)
             tf_df.index = high_proteins
             print(tf_df.T)
             tf_df_T = tf_df.T
-            top_values_df = DataFrame(top_tf_values*10000)
+            top_values_df = DataFrame((top_tf_values * 10000).detach().cpu().numpy())
             top_values_df.columns = high_proteins
             print(top_values_df)
             tf_names_att_df = concat([tf_df_T, top_values_df], axis=1, join='outer')
@@ -249,10 +270,10 @@ class Mintomics(pl.LightningModule):
             plt.title("Scaled Attentions of Top 500  Genes Influencing Protein-Coding Gene Expressions")
             plt.xlabel("All Genes ")
             plt.ylabel("Protein-Coding Genes")
-            plt.show()
-            
-            wandb.log({f"conf_mat" : wandb.Image(fig),"attentions":wandb.Image(fig1)})
-            return super().test_epoch_end(outputs)
+            timepoint_tag = getattr(self, "timepoint_tag", "2_5")
+            fig.figure.savefig(os.path.join(os.path.dirname(allprot_path), f"inference_confusion_matrix_{timepoint_tag}.png"), dpi=360)
+            fig1.savefig(os.path.join(os.path.dirname(allprot_path), f"inference_attention_{timepoint_tag}.png"), dpi=360)
+            plt.close("all")
     @staticmethod
     def add_model_specific_args(parent_parser):
         parser = ArgumentParser(parents=[parent_parser], add_help=False)
@@ -262,30 +283,54 @@ class Mintomics(pl.LightningModule):
         parser.add_argument('--n_class',type=int,default=1)
         parser.add_argument('--save_dir', type=str, default=CHECKPOINT_PATH, help="Directory in which to save models")
         parser.add_argument('--chkpt',type=str,help="Checkpoint name")
+        parser.add_argument('--abundance_threshold', type=float, default=0.8,
+                            help="Protein abundance cutoff for the positive class")
+        parser.add_argument('--timepoint', type=str, default='2.5', choices=['0.5', '1.5', '2.5', 'all'],
+                            help="Held-out pregnancy stage, or all of 0.5, 1.5, and 2.5")
         return parser
 def train_mintomics_classifier():
     pl.seed_everything(42)
-    # Ensure that all operations are deterministic on GPU (if used) for reproducibility
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
     parser = ArgumentParser()
-    parser = ArgumentParser()
-    parser = pl.Trainer.add_argparse_args(parser)
     parser = Mintomics.add_model_specific_args(parser)
-    parser.add_argument('--entity_name', type=str, default='aghktb', help="Weights and Biases entity name")
-    parser.add_argument('--project_name', type=str, default='Mintomics',
-                        help="Weights and Biases project name")
+    parser.add_argument('--num_gpus', type=int, default=1)
     args = parser.parse_args()
-    check_pt_dir = args.save_dir
-    dataset_test = Data2target_test(stage='test',size=1,pertage=0)
-    test_loader = DataLoader(dataset=dataset_test, batch_size=BATCH_SIZE, shuffle=False, num_workers=DATALOADERS)
-    model = Mintomics(learning_rate=1e-4,n_class=Num_classes)
-    trainer = pl.Trainer.from_argparse_args(args)
-    logger = WandbLogger(project=args.project_name, entity=args.entity_name,name=args.save_dir+"_test_New", offline=False, save_dir=".")
-    trainer.logger = logger
-    pest_checkpoint = DATASET_DIR+"/Trainings/"+args.save_dir+"/"+args.chkpt
-    trainer.test(model, dataloaders=test_loader, ckpt_path=pest_checkpoint)
+    timepoints = ['0.5', '1.5', '2.5'] if args.timepoint == 'all' else [args.timepoint]
+    pest_checkpoint = os.path.join(DATASET_DIR, "Trainings", args.save_dir, args.chkpt)
+    checkpoint = torch.load(pest_checkpoint, map_location="cpu", weights_only=False)
+    hparams = checkpoint.get("hyper_parameters", {})
+    output_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "intermediate_files")
+    accelerator = "gpu" if torch.cuda.is_available() else "cpu"
+    devices = args.num_gpus if accelerator == "gpu" else 1
+    for timepoint in timepoints:
+        tag = timepoint.replace('.', '_')
+        expression_file = f"Data_{tag}preg.csv"
+        label_file = f"Labels_{tag}preg.csv"
+        dataset_test = Data2target_test(
+            stage='test',
+            size=1,
+            pertage=0,
+            abundance_threshold=args.abundance_threshold,
+            expression_file=expression_file,
+            label_file=label_file,
+        )
+        test_loader = DataLoader(dataset=dataset_test, batch_size=BATCH_SIZE, shuffle=False, num_workers=0)
+        model = Mintomics(
+            learning_rate=hparams.get("learning_rate", 1e-4),
+            attn_head=hparams.get("attn_head", ATT_HEAD),
+            encoder_layers=hparams.get("encoder_layers", ENCODE_LAYERS),
+            n_class=hparams.get("n_class", Num_classes),
+            abundance_threshold=args.abundance_threshold,
+        )
+        model.expression_file = expression_file
+        model.timepoint_tag = tag
+        model.allprot_path = os.path.join(output_dir, f"Tfs_allprot_{tag}.csv")
+        model_state = {key: value for key, value in checkpoint["state_dict"].items() if key.startswith("model.")}
+        model.load_state_dict(model_state, strict=False)
+        trainer = pl.Trainer(accelerator=accelerator, devices=devices, logger=False)
+        trainer.test(model, dataloaders=test_loader)
 
 if __name__ == "__main__":
     train_mintomics_classifier()
