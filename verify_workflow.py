@@ -309,11 +309,11 @@ def main():
             "Dataset/Diff_labels/luminal protein estrus.csv index_col=0",
             "Dataset/genetoprotein.csv tab-separated, no header, index_col=1",
             "Dataset/Data_cpm/Data_control.csv index_col=0",
-            "Tfs_allprot_{control,0_5,1_5,2_5}.csv resolved from the repository root, then Dataset/",
-            "Siggenebasedprotlist_TCT{0.5,1.5,2.5}.csv resolved from the repository root, then Dataset/",
+            "intermediate_files/Tfs_allprot_{0_5,1_5,2_5}.csv",
+            "intermediate_files/Siggenebasedprotlist_TCT{0.5,1.5,2.5}.csv",
         ],
-        "Result_analysis_does_not_search": "intermediate_files",
-        "Result_analysis_writes": "AllTfs_diffcodinggene_{control,0_5,1_5,2_5}.csv",
+        "Result_analysis_search_order": ["intermediate_files", "repository root", "Dataset"],
+        "Result_analysis_writes": "intermediate_files/AllTfs_diffcodinggene_{0_5,1_5,2_5}.csv",
     }
 
     report["loader_attempts"] = {}

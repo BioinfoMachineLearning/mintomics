@@ -131,7 +131,7 @@ Those three files are written before the later protein-ranking section. That sec
 
 ## Output and analysis
 
-- `Result_analysis.py` reads the top-ranked tables and the significant-gene lists.
+- `Result_analysis.py` reads `intermediate_files/Tfs_allprot_{0_5,1_5,2_5}.csv` and `intermediate_files/Siggenebasedprotlist_TCT{0.5,1.5,2.5}.csv`. For each stage it keeps the protein columns whose gene symbol is in that significant-gene list, sorts the ranked gene symbols in each column, and writes `intermediate_files/AllTfs_diffcodinggene_{0_5,1_5,2_5}.csv`. Current inference does not write a control table, so this script does not look for `Tfs_allprot_control.csv`.
 - Training logs go to Weights & Biases. Use `WANDB_MODE=offline` for a local run.
 
 ## Reference
